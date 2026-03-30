@@ -12,14 +12,14 @@ def test_build_acts_query_valid_date(connector):
     """Test query building with a valid date and default language."""
     query = connector.build_acts_query("2024-01-01")
     assert "FILTER(?date = \"2024-01-01\"^^xsd:date)" in query
-    assert "expression_uses_language <http://publications.europa.eu/resource/authority/language/ENG>" in query
+    assert "expression_uses_language <https://publications.europa.eu/resource/authority/language/ENG>" in query
     assert "FILTER(LANG(?categoryLabel) = \"en\")" in query
 
 
 def test_build_acts_query_custom_language(connector):
     """Test query building with a custom language code."""
     query = connector.build_acts_query("2024-01-01", language="ENG")
-    assert "expression_uses_language <http://publications.europa.eu/resource/authority/language/ENG>" in query
+    assert "expression_uses_language <https://publications.europa.eu/resource/authority/language/ENG>" in query
     assert "FILTER(LANG(?categoryLabel) = \"en\")" in query
 
 
