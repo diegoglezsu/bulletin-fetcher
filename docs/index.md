@@ -1,6 +1,6 @@
-# bulletin-py
+# bulletin-fetcher
 
-bulletin-py is a Python library for searching and managing official bulletins.
+bulletin-fetcher is a Python library for searching and managing official bulletins.
 
 ## What is included
 

@@ -1,8 +1,8 @@
-site_name: bulletin-py
-site_description: Documentation for bulletin-py
-site_url: https://diegoglezsu.github.io/bulletin-py/
-repo_url: https://github.com/diegoglezsu/bulletin-py
-repo_name: diegoglezsu/bulletin-py
+site_name: bulletin-fetcher
+site_description: Documentation for bulletin-fetcher
+site_url: https://diegoglezsu.github.io/bulletin-fetcher/
+repo_url: https://github.com/diegoglezsu/bulletin-fetcher
+repo_name: diegoglezsu/bulletin-fetcher
 
 theme:
   name: material

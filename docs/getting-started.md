@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-pip install bulletin-py
+pip install bulletin-fetcher
 ```
 
 ## Suggested workflow
