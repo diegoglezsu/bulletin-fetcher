@@ -2,8 +2,6 @@ from typing import Literal
 
 SPARQL_ENDPOINT = "https://publications.europa.eu/webapi/rdf/sparql"
 
-LANGUAGE_BASE_URI = "http://publications.europa.eu/resource/authority/language/"
-
 DEFAULT_LANGUAGE = "ENG"
 
 EuLanguageCode = Literal[

@@ -68,7 +68,7 @@ def test_get_acts_with_valid_date(client, mock_connector):
     mock_response = {
         "results": {
             "bindings": [
-                {"act": {"value": "http://example.com/act1"}}
+                {"act": {"value": "https://example.com/act1"}}
             ]
         }
     }
@@ -81,7 +81,7 @@ def test_get_acts_with_valid_date(client, mock_connector):
     ) as mock_parse:
         mock_parse.return_value = [
             DoueOfficialAct(
-                celex_uri="http://example.com/act1",
+                celex_uri="https://example.com/act1",
                 act_number=None,
                 title="Act 1",
                 date=date(2025, 3, 27),
@@ -134,7 +134,7 @@ def test_get_acts_returns_parsed_results(client, mock_connector):
 
     expected_acts = [
         DoueOfficialAct(
-            celex_uri="http://example.com/act1",
+            celex_uri="https://example.com/act1",
             act_number=None,
             title="Act 1",
             date=date(2025, 3, 27),
@@ -148,7 +148,7 @@ def test_get_acts_returns_parsed_results(client, mock_connector):
             institution_label=None,
         ),
         DoueOfficialAct(
-            celex_uri="http://example.com/act2",
+            celex_uri="https://example.com/act2",
             act_number=None,
             title="Act 2",
             date=date(2025, 3, 27),

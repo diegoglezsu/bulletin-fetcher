@@ -6,7 +6,7 @@ Handles query building and HTTP communication.
 
 import requests
 
-from .constants import SPARQL_ENDPOINT, LANGUAGE_BASE_URI, LANGUAGE_CODE_MAP, EuLanguageCode, DEFAULT_LANGUAGE
+from .constants import SPARQL_ENDPOINT, LANGUAGE_CODE_MAP, EuLanguageCode, DEFAULT_LANGUAGE
 from .exceptions import EndpointError, QueryError
 
 
@@ -41,7 +41,7 @@ class _DoueConnector:
                 f"Supported: {', '.join(sorted(LANGUAGE_CODE_MAP))}"
             )
 
-        language_uri = f"{LANGUAGE_BASE_URI}{language}"
+        language_uri = f"http://publications.europa.eu/resource/authority/language/{language}"
 
         return f"""
 PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>

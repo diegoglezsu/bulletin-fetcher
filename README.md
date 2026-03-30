@@ -1,15 +1,11 @@
 # bulletin-fetcher
 
 [![Tests](https://github.com/diegoglezsu/bulletin-fetcher/actions/workflows/tests.yml/badge.svg)](https://github.com/diegoglezsu/bulletin-fetcher/actions/workflows/tests.yml)
-[![PyPI version](https://img.shields.io/pypi/v/bulletin-fetcher.svg)](https://pypi.org/project/bulletin-fetcher/)
+[![CodeQL](https://github.com/diegoglezsu/bulletin-fetcher/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/diegoglezsu/bulletin-fetcher/actions/workflows/github-code-scanning/codeql)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=diegoglezsu_bulletin-fetcher&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=diegoglezsu_bulletin-fetcher)
 [![Codecov status](https://codecov.io/github/diegoglezsu/bulletin-fetcher/badge.svg?branch=main&service=github)](https://app.codecov.io/gh/diegoglezsu/bulletin-fetcher)
+[![PyPI version](https://img.shields.io/pypi/v/bulletin-fetcher.svg)](https://pypi.org/project/bulletin-fetcher/)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://diegoglezsu.github.io/bulletin-fetcher/)
-
-[![Tests](https://github.com/diegoglezsu/bulletin-py/actions/workflows/tests.yml/badge.svg)](https://github.com/diegoglezsu/bulletin-py/actions/workflows/tests.yml)
-[![CodeQL](https://github.com/diegoglezsu/bulletin-py/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/diegoglezsu/bulletin-py/actions/workflows/github-code-scanning/codeql)
-[![PyPI version](https://img.shields.io/pypi/v/bulletin.svg)](https://pypi.org/project/bulletin-py/)
-[![Codecov status](https://codecov.io/github/diegoglezsu/bulletin-py/badge.svg?branch=main&service=github)](https://app.codecov.io/gh/diegoglezsu/bulletin-py)
-[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://diegoglezsu.github.io/bulletin-py/)
 
 ## Description
 
