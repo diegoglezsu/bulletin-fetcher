@@ -1,11 +1,11 @@
 import pytest
 
-from bulletin.doue._connector import _DoueConnector
+from bulletin.doue.repository._connector import DoueConnector
 from bulletin.doue.exceptions import QueryError, EndpointError
 
 @pytest.fixture
 def connector():
-    return _DoueConnector()
+    return DoueConnector()
 
 
 def test_build_acts_query_valid_date(connector):
@@ -80,7 +80,7 @@ def test_execute_query_bad_syntax(connector):
 @pytest.mark.integration
 def test_execute_query_unreachable_endpoint():
     """Test that a bad endpoint URL raises an EndpointError without a status code."""
-    fake_connector = _DoueConnector(endpoint="https://esto-no-existe.europa.eu/sparql")
+    fake_connector = DoueConnector(endpoint="https://esto-no-existe.europa.eu/sparql")
     
     with pytest.raises(EndpointError) as exc_info:
         fake_connector.execute_query("SELECT * WHERE { ?s ?p ?o } LIMIT 1")
@@ -94,7 +94,7 @@ def test_execute_query_unreachable_endpoint():
 def test_execute_query_timeout():
     """Test that a timeout raises an EndpointError."""
     # Build a valid query
-    connector = _DoueConnector(timeout=0.001)
+    connector = DoueConnector(timeout=0.001)
     query = connector.build_acts_query("2024-05-15")
     
     # Give it an impossibly small timeout (0.001 seconds) to force a timeout exception

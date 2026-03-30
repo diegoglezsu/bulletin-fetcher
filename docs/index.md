@@ -1,18 +1,25 @@
 # bulletin-fetcher
 
-bulletin-fetcher is a Python library for searching and managing official bulletins.
+bulletin-fetcher is a Python library for searching and managing official bulletins,
+currently focused on the Official Journal of the European Union (DOUE).
 
-## What is included
+## Why This Project
 
-- A public package named `bulletin`
-- Source-specific subpackages such as `bulletin.doue`
-- Typed models and a client-first API
+- Query official acts from EUR-Lex/Cellar.
+- Work with Python objects instead of raw SPARQL JSON.
+- Keep a clean architecture with a public API layer and a data connector layer.
 
-## Documentation goals
+## Quick Links
 
-This site will grow into a place for:
+- Getting Started: installation and first query flow.
+- API Reference: generated docs from source code docstrings.
 
-- installation and setup instructions
-- usage examples
-- API reference generated from docstrings
-- source-specific guides for each bulletin provider
+## Example
+
+```python
+from bulletin.doue.api.client import DoueBulletinClient
+
+client = DoueBulletinClient()
+acts = client.get_acts("2025-03-27", language="ENG")
+print(len(acts))
+```

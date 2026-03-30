@@ -6,11 +6,11 @@ Handles query building and HTTP communication.
 
 import requests
 
-from .constants import SPARQL_ENDPOINT, LANGUAGE_CODE_MAP, EuLanguageCode, DEFAULT_LANGUAGE
-from .exceptions import EndpointError, QueryError
+from ..constants import SPARQL_ENDPOINT, LANGUAGE_CODE_MAP, EuLanguageCode, DEFAULT_LANGUAGE
+from ..exceptions import EndpointError, QueryError
 
 
-class _DoueConnector:
+class DoueConnector:
     """Connector class for the EUR-Lex / Cellar SPARQL endpoint."""
 
     def __init__(self, endpoint: str = SPARQL_ENDPOINT, timeout: int = 30):

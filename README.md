@@ -9,16 +9,21 @@
 
 ## Description
 
-TODO:
-**bulletin-fetcher** is a Python library designed for...
+**bulletin-fetcher** is a Python library to query and parse official bulletins,
+starting with the Official Journal of the European Union (DOUE) via EUR-Lex
+and the Cellar SPARQL endpoint.
 
 ## Key Features
 
-TODO:
+- Python models for bulletin entries.
+- High-level client API for date-based DOUE queries.
+- Built-in parsing from raw SPARQL JSON to dataclasses.
+- Custom exception hierarchy for query and endpoint failures.
+- Test suite with unit and integration coverage.
 
 ## Installation
 
-You can install the library using `pip`:
+Install from PyPI:
 
 ```bash
 pip install bulletin-fetcher
@@ -26,10 +31,30 @@ pip install bulletin-fetcher
 
 ## Usage
 
-Here is a basic example of how to use the library:
+### Quick Example
+
+Fetch acts for a publication date:
 
 ```python
-# TODO: Add example code
+from bulletin.doue.api.client import DoueBulletinClient
+
+client = DoueBulletinClient()
+acts = client.get_acts("2025-03-27", language="ENG")
+
+print(f"Total acts: {len(acts)}")
+if acts:
+ first = acts[0]
+ print(first.celex_uri)
+ print(first.title)
+ print(first.date)
+```
+
+### Standalone Script
+
+The repository includes a runnable script:
+
+```bash
+python scripts/run_doue.py 2025-03-27 --language ENG
 ```
 
 ## Contributing
@@ -55,8 +80,7 @@ For any questions or suggestions, feel free to reach out to the author:
 
 ## Acknowledgements
 
-- [Mention any people or projects that helped you]
+- EUR-Lex / Cellar SPARQL endpoint
+- MkDocs and Material for MkDocs
 
 ---
-
-*This README is still in construction.*

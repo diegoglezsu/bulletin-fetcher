@@ -1,15 +1,10 @@
-"""
-DOUE (Diario Oficial de la Unión Europea) subpackage.
+"""DOUE (Official Journal of the European Union) subpackage."""
 
-Provides tools to query official acts from the EU Official Journal
-via the EUR-Lex / Cellar SPARQL endpoint.
-"""
-
-from .models import DoueOfficialAct
-from .exceptions import BulletinError, QueryError, EndpointError
+from . import api
+from .exceptions import BulletinError, EndpointError, QueryError
 
 __all__ = [
-    "DoueOfficialAct",
+    "api",
     "BulletinError",
     "QueryError",
     "EndpointError",

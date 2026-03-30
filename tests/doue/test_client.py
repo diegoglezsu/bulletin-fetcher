@@ -7,15 +7,15 @@ from unittest.mock import patch
 
 import pytest
 
-from bulletin.doue.client import DoueBulletinClient
+from bulletin.doue.api.client import DoueBulletinClient
 from bulletin.doue.constants import SPARQL_ENDPOINT
-from bulletin.doue.models import DoueOfficialAct
+from bulletin.doue.api.models import DoueOfficialAct
 
 
 @pytest.fixture
 def mock_connector():
-    """Fixture providing a mocked _DoueConnector."""
-    with patch("bulletin.doue.client._DoueConnector") as mock:
+    """Fixture providing a mocked DoueConnector."""
+    with patch("bulletin.doue.api.client.DoueConnector") as mock:
         yield mock
 
 
@@ -77,7 +77,7 @@ def test_get_acts_with_valid_date(client, mock_connector):
     mock_instance.execute_query.return_value = mock_response
 
     with patch(
-        "bulletin.doue.client.parse_results"
+        "bulletin.doue.api.client.parse_results"
     ) as mock_parse:
         mock_parse.return_value = [
             DoueOfficialAct(
@@ -115,7 +115,7 @@ def test_get_acts_with_custom_language(client, mock_connector):
     mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
     mock_instance.execute_query.return_value = {"results": {"bindings": []}}
 
-    with patch("bulletin.doue.client.parse_results") as mock_parse:
+    with patch("bulletin.doue.api.client.parse_results") as mock_parse:
         mock_parse.return_value = []
         client.get_acts(test_date, language=custom_language)
 
@@ -164,7 +164,7 @@ def test_get_acts_returns_parsed_results(client, mock_connector):
     ]
 
     with patch(
-        "bulletin.doue.client.parse_results"
+        "bulletin.doue.api.client.parse_results"
     ) as mock_parse:
         mock_parse.return_value = expected_acts
         result = client.get_acts(test_date)
@@ -180,7 +180,7 @@ def test_get_acts_empty_results(client, mock_connector):
     mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
     mock_instance.execute_query.return_value = {"results": {"bindings": []}}
 
-    with patch("bulletin.doue.client.parse_results") as mock_parse:
+    with patch("bulletin.doue.api.client.parse_results") as mock_parse:
         mock_parse.return_value = []
         result = client.get_acts(test_date)
 

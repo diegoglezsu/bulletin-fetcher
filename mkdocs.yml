@@ -36,6 +36,7 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Development: development.md
   - API Reference:
       - bulletin.doue: api/doue.md
 

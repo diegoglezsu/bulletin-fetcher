@@ -2,8 +2,8 @@
 High-level client for querying EU Official Journal (DOUE) acts.
 """
 
-from ._connector import _DoueConnector
-from .constants import DEFAULT_LANGUAGE, SPARQL_ENDPOINT, EuLanguageCode
+from ..repository._connector import DoueConnector
+from ..constants import DEFAULT_LANGUAGE, SPARQL_ENDPOINT, EuLanguageCode
 from .models import DoueOfficialAct, parse_results
 
 
@@ -11,7 +11,7 @@ class DoueBulletinClient:
     """Client to query EU Official Journal acts."""
 
     def __init__(self, endpoint: str = SPARQL_ENDPOINT, timeout: int = 30):
-        self._connector = _DoueConnector(endpoint=endpoint, timeout=timeout)
+        self._connector = DoueConnector(endpoint=endpoint, timeout=timeout)
 
     def get_acts(self, date: str, language: EuLanguageCode = DEFAULT_LANGUAGE) -> list[DoueOfficialAct]:
         """Fetch Official Journal acts for a given publication date.
