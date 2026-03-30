@@ -1,6 +1,7 @@
 # bulletin-py
 
 [![GitHub actions status](https://github.com/diegoglezsu/bulletin-py/actions/workflows/tests.yml/badge.svg)](https://github.com/diegoglezsu/bulletin-py/actions/workflows/tests.yml)
+[![CodeQL](https://github.com/diegoglezsu/bulletin-py/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/diegoglezsu/bulletin-py/actions/workflows/github-code-scanning/codeql)
 [![PyPI version](https://img.shields.io/pypi/v/bulletin.svg)](https://pypi.org/project/bulletin-py/)
 [![Codecov status](https://codecov.io/github/diegoglezsu/bulletin-py/badge.svg?branch=main&service=github)](https://app.codecov.io/gh/diegoglezsu/bulletin-py)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://diegoglezsu.github.io/bulletin-py/)
