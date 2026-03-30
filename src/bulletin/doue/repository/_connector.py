@@ -6,7 +6,7 @@ Handles query building and HTTP communication.
 
 import requests
 
-from ..constants import SPARQL_ENDPOINT, LANGUAGE_CODE_MAP, EuLanguageCode, DEFAULT_LANGUAGE
+from ..constants import SPARQL_ENDPOINT, LANGUAGE_CODE_MAP, DEFAULT_LANGUAGE
 from ..exceptions import EndpointError, QueryError
 
 
@@ -17,7 +17,7 @@ class DoueConnector:
         self.endpoint = endpoint
         self.timeout = timeout
 
-    def build_acts_query(self, date: str, language: EuLanguageCode = DEFAULT_LANGUAGE) -> str:
+    def build_acts_query(self, date: str, language: str = DEFAULT_LANGUAGE) -> str:
         """Build a SPARQL query for Official Journal acts on a given date.
 
         Args:

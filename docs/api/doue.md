@@ -21,6 +21,10 @@ from bulletin.doue.api.models import DoueOfficialAct
 
 ::: bulletin.doue.exceptions
 
+## Constants
+
+::: bulletin.doue.constants
+
 ## Repository Layer (Internal)
 
 The connector is primarily intended for internal use and testing:
