@@ -1,4 +1,9 @@
-# bulletin-py
+# bulletin-fetcher
+
+[![Tests](https://github.com/diegoglezsu/bulletin-fetcher/actions/workflows/tests.yml/badge.svg)](https://github.com/diegoglezsu/bulletin-fetcher/actions/workflows/tests.yml)
+[![PyPI version](https://img.shields.io/pypi/v/bulletin-fetcher.svg)](https://pypi.org/project/bulletin-fetcher/)
+[![Codecov status](https://codecov.io/github/diegoglezsu/bulletin-fetcher/badge.svg?branch=main&service=github)](https://app.codecov.io/gh/diegoglezsu/bulletin-fetcher)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://diegoglezsu.github.io/bulletin-fetcher/)
 
 [![Tests](https://github.com/diegoglezsu/bulletin-py/actions/workflows/tests.yml/badge.svg)](https://github.com/diegoglezsu/bulletin-py/actions/workflows/tests.yml)
 [![CodeQL](https://github.com/diegoglezsu/bulletin-py/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/diegoglezsu/bulletin-py/actions/workflows/github-code-scanning/codeql)
@@ -9,7 +14,7 @@
 ## Description
 
 TODO:
-**bulletin-py** is a Python library designed for...
+**bulletin-fetcher** is a Python library designed for...
 
 ## Key Features
 
@@ -20,7 +25,7 @@ TODO:
 You can install the library using `pip`:
 
 ```bash
-pip install bulletin-py
+pip install bulletin-fetcher
 ```
 
 ## Usage
