@@ -3,7 +3,6 @@ name: Deploy documentation to GitHub Pages
 on:
   push:
     branches:
-      - dev
       - main
   workflow_dispatch:
 
