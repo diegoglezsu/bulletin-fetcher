@@ -15,7 +15,7 @@ python -m pip install --upgrade pip
 pip install -e .[dev,docs]
 ```
 
-## Run Tests
+## Run Tests 🧪
 
 Run all tests:
 
@@ -29,13 +29,7 @@ Generate coverage XML report:
 pytest --cov --cov-branch --cov-report=xml
 ```
 
-## Build Docs
-
-Serve docs locally:
-
-```bash
-mkdocs serve -a 127.0.0.1:8000
-```
+## Build Docs 📚
 
 Build static docs:
 
@@ -43,7 +37,13 @@ Build static docs:
 mkdocs build
 ```
 
-## Reporting Issues
+Serve docs locally:
+
+```bash
+mkdocs serve
+```
+
+## Reporting Issues 🐞
 
 If you encounter any issues, please report them on the [GitHub Issues page](https://github.com/diegoglezsu/bulletin-fetcher/issues). When reporting an issue, please include:
 
@@ -52,7 +52,7 @@ If you encounter any issues, please report them on the [GitHub Issues page](http
 - Steps to reproduce the issue.
 - Any relevant screenshots or error messages.
 
-## Contributing
+## Contributing 🚀
 
 Contributions are welcome! Please follow the standard steps:
 

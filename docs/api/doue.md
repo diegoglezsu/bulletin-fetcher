@@ -12,13 +12,26 @@ from bulletin.doue.api.client import DoueBulletinClient
 from bulletin.doue.api.models import DoueOfficialAct
 ```
 
-## Public API Layer
+## Client
 
-::: bulletin.doue.api.client
-::: bulletin.doue.api.models
+::: bulletin.doue.api.client.DoueBulletinClient
+    options:
+      heading_level: 3
+      show_root_heading: true
+      show_root_toc_entry: true
 
-## Repository Layer (Internal)
+## Models
 
-The connector is primarily intended for internal use and testing:
+::: bulletin.doue.api.models.DoueOfficialAct
+    options:
+      heading_level: 3
+      show_root_heading: true
+      show_root_toc_entry: true
 
-::: bulletin.doue.repository._connector
+## Constants
+
+::: bulletin.doue.constants.LANGUAGE_CODE_MAP
+    options:
+      heading_level: 3
+      show_root_heading: true
+      show_root_toc_entry: true

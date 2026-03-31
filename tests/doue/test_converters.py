@@ -1,4 +1,4 @@
-"""Unit tests for model parsing utilities."""
+"""Unit tests for converters utilities."""
 
 from datetime import date
 
@@ -112,6 +112,13 @@ def test_parse_results_raises_for_invalid_bindings_type() -> None:
         parse_results(response)
 
 
+def test_parse_results_raises_for_invalid_binding_entry() -> None:
+    response = {"results": {"bindings": ["not-a-mapping"]}}
+
+    with pytest.raises(TypeError, match="each binding must be a mapping"):
+        parse_results(response)
+
+
 def test_acts_to_csv_serializes_rows() -> None:
     acts = [
         DoueOfficialAct(
@@ -134,8 +141,10 @@ def test_acts_to_csv_serializes_rows() -> None:
     rows = csv_text.splitlines()
 
     assert rows[0] == (
-        "\"celex_uri\",\"act_number\",\"title\",\"date\",\"section_code\",\"subsection_code\","
-        "\"category_code\",\"category_uri\",\"category_label\",\"institution_code\","
-        "\"institution_uri\",\"institution_label\""
+        "\"celex_uri\",\"act_number\",\"title\",\"date\",\"section_code\"," 
+        "\"subsection_code\",\"category_code\",\"category_uri\",\"category_label\"," 
+        "\"institution_code\",\"institution_uri\",\"institution_label\""
     )
-    assert rows[1].startswith("\"https://example.com/act1\",\"2025/1\",\"Act 1\",\"2025-03-27\"")
+    assert rows[1].startswith(
+        "\"https://example.com/act1\",\"2025/1\",\"Act 1\",\"2025-03-27\""
+    )

@@ -167,3 +167,31 @@ def test_get_acts_empty_results(client, mock_connector):
         result = client.get_acts(test_date)
 
         assert result == []
+
+
+def test_get_acts_csv_returns_csv(client) -> None:
+    """Test get_acts_csv returns CSV text."""
+    test_date = "2025-03-27"
+    acts = [
+        DoueOfficialAct(
+            celex_uri="https://example.com/act1",
+            act_number="2025/1",
+            title="Act 1",
+            date=date(2025, 3, 27),
+            section_code=None,
+            subsection_code=None,
+            category_code=None,
+            category_uri=None,
+            category_label=None,
+            institution_code=None,
+            institution_uri=None,
+            institution_label=None,
+        )
+    ]
+
+    with patch.object(client, "get_acts", return_value=acts) as mock_get:
+        csv_text = client.get_acts_csv(test_date)
+
+    assert "\"celex_uri\",\"act_number\",\"title\",\"date\"" in csv_text
+    assert "\"https://example.com/act1\",\"2025/1\",\"Act 1\",\"2025-03-27\"" in csv_text
+    mock_get.assert_called_once_with(test_date, language="ENG")

@@ -7,23 +7,14 @@ currently focused on the Official Journal of the European Union (DOUE).
     <img src="assets/logo.jpg" alt="Bulletin Fetcher Logo" width="200" />
 </div>
 
-## Why This Project
+## Why This Project 🤔
 
-- Query official acts from EUR-Lex/Cellar.
-- Work with Python objects instead of raw SPARQL JSON.
+- Query official acts from Legal Institutions.
+- Works with Python objects instead of raw JSON and gets away from Web Services.
+- Easier for data manipulation and integration and notebooks.
 - Keep a clean architecture with a public API layer and a data connector layer.
 
-## Quick Links
+## Current support 🚀
 
-- Getting Started: installation and first query flow.
-- API Reference: generated docs from source code docstrings.
-
-## Example
-
-```python
-from bulletin.doue.api.client import DoueBulletinClient
-
-client = DoueBulletinClient()
-acts = client.get_acts("2025-03-27", language="ENG")
-print(len(acts))
-```
+- DOUE queries by publication date.
+- DOUE CSV export of act lists.

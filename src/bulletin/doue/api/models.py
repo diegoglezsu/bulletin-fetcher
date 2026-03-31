@@ -43,8 +43,25 @@ class DoueOfficialAct:
     institution_uri: str | None
     institution_label: str | None
 
+    def _to_dict(self) -> dict[str, str | None]:
+        """Return a serializable dict representation of the act."""
+        return {
+            "celex_uri": self.celex_uri,
+            "act_number": self.act_number,
+            "title": self.title,
+            "date": self.date.isoformat(),
+            "section_code": self.section_code,
+            "subsection_code": self.subsection_code,
+            "category_code": self.category_code,
+            "category_uri": self.category_uri,
+            "category_label": self.category_label,
+            "institution_code": self.institution_code,
+            "institution_uri": self.institution_uri,
+            "institution_label": self.institution_label,
+        }
+
     @classmethod
-    def from_binding(cls, binding: Mapping[str, Any]) -> DoueOfficialAct:
+    def _from_binding(cls, binding: Mapping[str, Any]) -> DoueOfficialAct:
         """Build a DoueOfficialAct from one SPARQL binding item."""
         return cls(
             celex_uri=_required_value(binding, "act"),
@@ -60,22 +77,3 @@ class DoueOfficialAct:
             institution_uri=_optional_value(binding, "institutionUri"),
             institution_label=_optional_value(binding, "institutionLabel"),
         )
-
-
-def parse_results(results: Mapping[str, Any]) -> list[DoueOfficialAct]:
-    """Parse SPARQL results into a list of DoueOfficialAct objects."""
-    try:
-        bindings = results["results"]["bindings"]
-    except KeyError as exc:
-        raise KeyError("Invalid SPARQL response: missing 'results.bindings'") from exc
-
-    if not isinstance(bindings, list):
-        raise TypeError("Invalid SPARQL response: 'bindings' must be a list")
-
-    acts: list[DoueOfficialAct] = []
-    for binding in bindings:
-        if not isinstance(binding, Mapping):
-            raise TypeError("Invalid SPARQL response: each binding must be a mapping")
-        acts.append(DoueOfficialAct.from_binding(binding))
-
-    return acts

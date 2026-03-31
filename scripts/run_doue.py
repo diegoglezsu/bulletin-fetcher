@@ -5,7 +5,6 @@ import sys
 
 from bulletin.doue.api.client import DoueBulletinClient
 
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Fetch Official Journal (DOUE) acts by publication date."
@@ -46,6 +45,10 @@ def main() -> int:
         if act.institution_label:
             print(f"Institution: {act.institution_label}")
         print("-" * 60)
+
+    csv_output = client.get_acts_csv(args.date, language=args.language)  # Example of fetching CSV output
+    print("CSV Output:")
+    print(csv_output)
 
     return 0
 

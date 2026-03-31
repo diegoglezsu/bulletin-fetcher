@@ -38,10 +38,3 @@ SUPPORTED_LANGUAGE_CODES = tuple(LANGUAGE_CODE_MAP)
 
 #: Default language code used by the client when no language is provided.
 DEFAULT_LANGUAGE = "ENG"
-
-__all__ = [
-    "SPARQL_ENDPOINT",
-    "DEFAULT_LANGUAGE",
-    "LANGUAGE_CODE_MAP",
-    "SUPPORTED_LANGUAGE_CODES",
-]
