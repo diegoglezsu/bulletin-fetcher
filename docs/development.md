@@ -43,6 +43,15 @@ Build static docs:
 mkdocs build
 ```
 
+## Reporting Issues
+
+If you encounter any issues, please report them on the [GitHub Issues page](https://github.com/diegoglezsu/bulletin-fetcher/issues). When reporting an issue, please include:
+
+- A clear and descriptive title.
+- A detailed description of the problem.
+- Steps to reproduce the issue.
+- Any relevant screenshots or error messages.
+
 ## Contributing
 
 Contributions are welcome! Please follow the standard steps:

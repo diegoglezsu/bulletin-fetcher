@@ -12,7 +12,9 @@ def test_parse_results_with_required_fields_only() -> None:
         "results": {
             "bindings": [
                 {
-                    "act": {"value": "http://publications.europa.eu/resource/celex/32025R0001"},
+                    "act": {
+                        "value": "http://publications.europa.eu/resource/celex/32025R0001"
+                    },
                     "title": {"value": "Regulation (EU) 2025/1"},
                     "date": {"value": "2025-01-01"},
                 }

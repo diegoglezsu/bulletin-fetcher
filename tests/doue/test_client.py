@@ -28,35 +28,27 @@ def client(mock_connector):
 def test_init_with_defaults(mock_connector):
     """Test client initialization with default parameters."""
     DoueBulletinClient()
-    mock_connector.assert_called_once_with(
-        endpoint=SPARQL_ENDPOINT, timeout=30
-    )
+    mock_connector.assert_called_once_with(endpoint=SPARQL_ENDPOINT, timeout=30)
 
 
 def test_init_with_custom_endpoint(mock_connector):
     """Test client initialization with custom endpoint."""
     custom_endpoint = "https://custom.endpoint/sparql"
     DoueBulletinClient(endpoint=custom_endpoint)
-    mock_connector.assert_called_once_with(
-        endpoint=custom_endpoint, timeout=30
-    )
+    mock_connector.assert_called_once_with(endpoint=custom_endpoint, timeout=30)
 
 
 def test_init_with_custom_timeout(mock_connector):
     """Test client initialization with custom timeout."""
     DoueBulletinClient(timeout=60)
-    mock_connector.assert_called_once_with(
-        endpoint=SPARQL_ENDPOINT, timeout=60
-    )
+    mock_connector.assert_called_once_with(endpoint=SPARQL_ENDPOINT, timeout=60)
 
 
 def test_init_with_all_custom_params(mock_connector):
     """Test client initialization with all custom parameters."""
     custom_endpoint = "https://custom.endpoint/sparql"
     custom_timeout = 45
-    DoueBulletinClient(
-        endpoint=custom_endpoint, timeout=custom_timeout
-    )
+    DoueBulletinClient(endpoint=custom_endpoint, timeout=custom_timeout)
     mock_connector.assert_called_once_with(
         endpoint=custom_endpoint, timeout=custom_timeout
     )
@@ -66,19 +58,13 @@ def test_get_acts_with_valid_date(client, mock_connector):
     """Test fetching acts with a valid ISO date."""
     test_date = "2025-03-27"
     mock_response = {
-        "results": {
-            "bindings": [
-                {"act": {"value": "https://example.com/act1"}}
-            ]
-        }
+        "results": {"bindings": [{"act": {"value": "https://example.com/act1"}}]}
     }
     mock_instance = mock_connector.return_value
     mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
     mock_instance.execute_query.return_value = mock_response
 
-    with patch(
-        "bulletin.doue.api.client.parse_results"
-    ) as mock_parse:
+    with patch("bulletin.doue.api.client.parse_results") as mock_parse:
         mock_parse.return_value = [
             DoueOfficialAct(
                 celex_uri="https://example.com/act1",
@@ -100,9 +86,7 @@ def test_get_acts_with_valid_date(client, mock_connector):
         mock_instance.build_acts_query.assert_called_once_with(
             test_date, language="ENG"
         )
-        mock_instance.execute_query.assert_called_once_with(
-            "SPARQL_QUERY"
-        )
+        mock_instance.execute_query.assert_called_once_with("SPARQL_QUERY")
         mock_parse.assert_called_once_with(mock_response)
         assert len(result) == 1
 
@@ -163,9 +147,7 @@ def test_get_acts_returns_parsed_results(client, mock_connector):
         ),
     ]
 
-    with patch(
-        "bulletin.doue.api.client.parse_results"
-    ) as mock_parse:
+    with patch("bulletin.doue.api.client.parse_results") as mock_parse:
         mock_parse.return_value = expected_acts
         result = client.get_acts(test_date)
 

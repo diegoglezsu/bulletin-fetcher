@@ -9,14 +9,14 @@ theme:
   favicon: assets/logo.jpg
   palette:
     - scheme: default
-      primary: amber
-      accent: deep orange
+      primary: blue
+      accent: blue
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - scheme: slate
-      primary: amber
-      accent: deep orange
+      primary: blue
+      accent: blue
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
@@ -35,9 +35,9 @@ plugins:
           paths: [src]
 
 nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - Development: development.md
+  - index.md
+  - getting-started.md
+  - development.md
   - API Reference:
       - bulletin.doue: api/doue.md
 
