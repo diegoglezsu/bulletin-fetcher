@@ -13,7 +13,9 @@ class DoueBulletinClient:
     def __init__(self, endpoint: str = SPARQL_ENDPOINT, timeout: int = 30):
         self._connector = DoueConnector(endpoint=endpoint, timeout=timeout)
 
-    def get_acts(self, date: str, language: str = DEFAULT_LANGUAGE) -> list[DoueOfficialAct]:
+    def get_acts(
+        self, date: str, language: str = DEFAULT_LANGUAGE
+    ) -> list[DoueOfficialAct]:
         """Fetch Official Journal acts for a given publication date.
 
         Args:

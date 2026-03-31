@@ -1,6 +1,8 @@
 """
 Custom exceptions for the DOUE subpackage.
 """
+
+
 class BulletinError(Exception):
     """Base exception for all bulletin errors."""
 
