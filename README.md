@@ -19,11 +19,10 @@
 
 ## Key Features
 
-- Python models for bulletin entries.
-- High-level client API for date-based DOUE queries.
-- Built-in parsing from raw SPARQL JSON to dataclasses.
-- Custom exception hierarchy for query and endpoint failures.
-- Test suite with unit and integration coverage.
+- Query official acts from Legal Institutions.
+- Works with Python objects instead of raw JSON and gets away from Web Services.
+- Easier for data manipulation and integration in notebooks through Python models.
+- Keep a clean architecture with a public API layer and a data connector layer.
 
 ## Installation
 
@@ -43,14 +42,13 @@ Fetch acts for a publication date:
 from bulletin.doue.api.client import DoueBulletinClient
 
 client = DoueBulletinClient()
-acts = client.get_acts("2025-03-27", language="ENG")
+acts = client.get_acts(date="2025-03-31")
 
 print(f"Total acts: {len(acts)}")
 if acts:
  first = acts[0]
  print(first.celex_uri)
  print(first.title)
- print(first.date)
 ```
 
 ### Standalone Script
@@ -58,7 +56,7 @@ if acts:
 The repository includes a runnable script:
 
 ```bash
-python scripts/run_doue.py 2025-03-27 --language ENG
+python scripts/run_doue.py
 ```
 
 ## Contributing
@@ -81,10 +79,6 @@ For any questions or suggestions, feel free to reach out to the author:
 
 - **Author**: Diego González Suárez
 - **Email**: <gonzalezsdiego@uniovi.es>
-
-## Acknowledgements
-
-- EUR-Lex / Cellar SPARQL endpoint
-- MkDocs and Material for MkDocs
+- **GitHub**: [diegoglezsu](https://github.com/diegoglezsu)
 
 ---

@@ -4,6 +4,7 @@ Connector for the EUR-Lex / Cellar SPARQL endpoint.
 Handles query building and HTTP communication.
 """
 
+from datetime import date
 import requests
 
 from ..constants import SPARQL_ENDPOINT, LANGUAGE_CODE_MAP, DEFAULT_LANGUAGE
@@ -17,11 +18,19 @@ class DoueConnector:
         self.endpoint = endpoint
         self.timeout = timeout
 
-    def build_acts_query(self, date: str, language: str = DEFAULT_LANGUAGE) -> str:
+    def build_acts_query(
+        self,
+        date: str,
+        language: str = DEFAULT_LANGUAGE,
+        date_end: str | None = None,
+        title_contains: str | None = None,
+    ) -> str:
         """Build a SPARQL query for Official Journal acts on a given date.
 
         Args:
             date: Publication date in ISO format (e.g. "2025-03-27").
+            date_end: End date in ISO format (YYYY-MM-DD). If provided, fetch acts published between `date` and `date_end` inclusive.
+            title_contains: Case-insensitive substring filter on title.
             language: ISO language code (default: "ENG").
 
         Returns:
@@ -31,8 +40,17 @@ class DoueConnector:
             QueryError: If the date format is invalid.
         """
         # Basic validation
-        if not date or len(date) != 10 or date[4] != "-" or date[7] != "-":
-            raise QueryError(f"Invalid date format: '{date}'. Expected YYYY-MM-DD.")
+        _validate_date(date)
+
+        if date_end is not None:
+            _validate_date(date_end)
+            if _parse_date(date_end) < _parse_date(date):
+                raise QueryError("date_end must be on or after date.")
+
+        if title_contains is not None:
+            title_contains = title_contains.strip()
+            if not title_contains:
+                raise QueryError("title_contains filter cannot be empty.")
 
         lang_code = LANGUAGE_CODE_MAP.get(language)
         if lang_code is None:
@@ -44,6 +62,8 @@ class DoueConnector:
         language_uri = (
             f"http://publications.europa.eu/resource/authority/language/{language}"
         )
+
+        filters: list[str] = self._get_filters(date, date_end, title_contains)
 
         return f"""
 PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
@@ -93,8 +113,7 @@ WHERE {{
     AS ?institutionCode
   )
 
-  FILTER(?date = "{date}"^^xsd:date)
-  FILTER(STRSTARTS(STR(?act), "http://publications.europa.eu/resource/celex/"))
+    {"\n  ".join(filters)}
 
   OPTIONAL {{ ?c_act cdm:official-journal-act_number ?actNumber . }}
 }}
@@ -133,3 +152,39 @@ ORDER BY ?sectionCode ?subsectionCode ?categoryLabel ?institutionLabel
                 f"Failed to reach SPARQL endpoint: {e}",
                 endpoint=self.endpoint,
             ) from e
+
+
+    def _get_filters(self, date: str, date_end: str | None, title_contains: str | None) -> list[str]:
+        filters: list[str] = []
+        if date_end is not None:
+            filters.append(f'FILTER(?date >= "{date}"^^xsd:date)')
+            filters.append(f'FILTER(?date <= "{date_end}"^^xsd:date)')
+        else:
+            filters.append(f'FILTER(?date = "{date}"^^xsd:date)')
+
+        if title_contains is not None:
+            escaped_title = _escape_sparql_literal(title_contains)
+            filters.append(
+                f'FILTER(CONTAINS(LCASE(STR(?title)), LCASE("{escaped_title}")))'
+            )
+
+        filters.append(
+            'FILTER(STRSTARTS(STR(?act), "http://publications.europa.eu/resource/celex/"))'
+        )
+        return filters
+
+
+def _validate_date(value: str) -> None:
+    if not value or len(value) != 10 or value[4] != "-" or value[7] != "-":
+        raise QueryError(f"Invalid date format: '{value}'. Expected YYYY-MM-DD.")
+
+
+def _parse_date(value: str) -> date:
+    try:
+        return date.fromisoformat(value)
+    except ValueError as exc:
+        raise QueryError(f"Invalid date format: '{value}'. Expected YYYY-MM-DD.") from exc
+
+
+def _escape_sparql_literal(value: str) -> str:
+    return value.replace("\\", "\\\\").replace('"', "\\\"")

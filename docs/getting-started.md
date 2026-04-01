@@ -25,12 +25,11 @@ pip install -e .[dev]
 from bulletin.doue.api.client import DoueBulletinClient
 
 client = DoueBulletinClient()
-acts = client.get_acts("2025-03-27", language="ENG")
+acts = client.get_acts(date="2025-03-27")
 
 for act in acts[:3]:
  print(act.celex_uri)
  print(act.title)
- print(act.date)
 ```
 
 ### Run the Example Script
@@ -38,5 +37,5 @@ for act in acts[:3]:
 The [repository](https://github.com/diegoglezsu/bulletin-fetcher/tree/main/scripts) includes an executable helper script:
 
 ```bash
-python scripts/run_doue.py 2025-03-27 --language ENG
+python scripts/run_doue.py
 ```

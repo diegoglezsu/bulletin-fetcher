@@ -84,7 +84,7 @@ def test_get_acts_with_valid_date(client, mock_connector):
         result = client.get_acts(test_date)
 
         mock_instance.build_acts_query.assert_called_once_with(
-            test_date, language="ENG"
+            test_date, language="ENG", date_end=None, title_contains=None
         )
         mock_instance.execute_query.assert_called_once_with("SPARQL_QUERY")
         mock_parse.assert_called_once_with(mock_response)
@@ -104,7 +104,7 @@ def test_get_acts_with_custom_language(client, mock_connector):
         client.get_acts(test_date, language=custom_language)
 
         mock_instance.build_acts_query.assert_called_once_with(
-            test_date, language=custom_language
+            test_date, language=custom_language, date_end=None, title_contains=None
         )
 
 
@@ -169,6 +169,58 @@ def test_get_acts_empty_results(client, mock_connector):
         assert result == []
 
 
+def test_get_acts_with_date_end(client, mock_connector):
+    """Test fetching acts with a date range using date_end parameter."""
+    test_date = "2025-03-27"
+    test_date_end = "2025-03-31"
+    mock_instance = mock_connector.return_value
+    mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+    mock_instance.execute_query.return_value = {"results": {"bindings": []}}
+
+    with patch("bulletin.doue.api.client.parse_results") as mock_parse:
+        mock_parse.return_value = []
+        client.get_acts(test_date, date_end=test_date_end)
+
+        mock_instance.build_acts_query.assert_called_once_with(
+            test_date, language="ENG", date_end=test_date_end, title_contains=None
+        )
+
+
+def test_get_acts_with_title_contains(client, mock_connector):
+    """Test fetching acts with a title filter using title_contains parameter."""
+    test_date = "2025-03-27"
+    title_filter = "regulation"
+    mock_instance = mock_connector.return_value
+    mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+    mock_instance.execute_query.return_value = {"results": {"bindings": []}}
+
+    with patch("bulletin.doue.api.client.parse_results") as mock_parse:
+        mock_parse.return_value = []
+        client.get_acts(test_date, title_contains=title_filter)
+
+        mock_instance.build_acts_query.assert_called_once_with(
+            test_date, language="ENG", date_end=None, title_contains=title_filter
+        )
+
+
+def test_get_acts_with_date_end_and_title_contains(client, mock_connector):
+    """Test fetching acts with both date_end and title_contains parameters."""
+    test_date = "2025-03-27"
+    test_date_end = "2025-03-31"
+    title_filter = "directive"
+    mock_instance = mock_connector.return_value
+    mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+    mock_instance.execute_query.return_value = {"results": {"bindings": []}}
+
+    with patch("bulletin.doue.api.client.parse_results") as mock_parse:
+        mock_parse.return_value = []
+        client.get_acts(test_date, date_end=test_date_end, title_contains=title_filter)
+
+        mock_instance.build_acts_query.assert_called_once_with(
+            test_date, language="ENG", date_end=test_date_end, title_contains=title_filter
+        )
+
+
 def test_get_acts_csv_returns_csv(client) -> None:
     """Test get_acts_csv returns CSV text."""
     test_date = "2025-03-27"
@@ -194,4 +246,37 @@ def test_get_acts_csv_returns_csv(client) -> None:
 
     assert "\"celex_uri\",\"act_number\",\"title\",\"date\"" in csv_text
     assert "\"https://example.com/act1\",\"2025/1\",\"Act 1\",\"2025-03-27\"" in csv_text
-    mock_get.assert_called_once_with(test_date, language="ENG")
+    mock_get.assert_called_once_with(test_date, language="ENG", date_end=None, title_contains=None)
+
+
+def test_get_acts_csv_with_date_end_and_title_contains(client) -> None:
+    """Test get_acts_csv with date_end and title_contains parameters."""
+    test_date = "2025-03-27"
+    test_date_end = "2025-03-31"
+    title_filter = "regulation"
+    acts = [
+        DoueOfficialAct(
+            celex_uri="https://example.com/act1",
+            act_number="2025/1",
+            title="Regulation about X",
+            date=date(2025, 3, 27),
+            section_code=None,
+            subsection_code=None,
+            category_code=None,
+            category_uri=None,
+            category_label=None,
+            institution_code=None,
+            institution_uri=None,
+            institution_label=None,
+        )
+    ]
+
+    with patch.object(client, "get_acts", return_value=acts) as mock_get:
+        csv_text = client.get_acts_csv(
+            test_date, date_end=test_date_end, title_contains=title_filter
+        )
+
+    assert "\"celex_uri\",\"act_number\",\"title\",\"date\"" in csv_text
+    mock_get.assert_called_once_with(
+        test_date, language="ENG", date_end=test_date_end, title_contains=title_filter
+    )
