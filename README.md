@@ -3,15 +3,13 @@
 [![Tests](https://github.com/diegoglezsu/bulletin-fetcher/actions/workflows/tests.yml/badge.svg)](https://github.com/diegoglezsu/bulletin-fetcher/actions/workflows/tests.yml)
 [![CodeQL](https://github.com/diegoglezsu/bulletin-fetcher/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/diegoglezsu/bulletin-fetcher/actions/workflows/github-code-scanning/codeql)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=diegoglezsu_bulletin-fetcher&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=diegoglezsu_bulletin-fetcher)
-[![Codecov status](https://codecov.io/github/diegoglezsu/bulletin-fetcher/badge.svg?branch=main&service=github)](https://app.codecov.io/gh/diegoglezsu/bulletin-fetcher)
+[![Codecov status](https://codecov.io/github/diegoglezsu/bulletin-fetcher/badge.svg?branch=main&service=github)](https://app.codecov.io/github/diegoglezsu/bulletin-fetcher)
 [![PyPI version](https://img.shields.io/pypi/v/bulletin-fetcher.svg)](https://pypi.org/project/bulletin-fetcher/)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://diegoglezsu.github.io/bulletin-fetcher/)
 
 ## Description
 
-<div style="text-align: center; margin: 20px 0;">
-    <img src="docs/assets/logo.jpg" alt="Bulletin Fetcher Logo" width="200" />
-</div>
+![Bulletin Fetcher Logo](https://raw.githubusercontent.com/diegoglezsu/bulletin-fetcher/main/docs/assets/logo.jpg)
 
 **bulletin-fetcher** is a Python library to query and fetch official bulletins. It makes easier to work with the Official Journal Data in python, providing a high-level API and data models. Current support:
 
