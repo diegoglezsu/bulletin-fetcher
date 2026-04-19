@@ -12,20 +12,14 @@ license-files = ["LICENSE"]
 authors = [
     {name = "Diego González Suárez", email = "gonzalezsdiego@uniovi.es"}
 ]
-keywords = ["bulletin", "official", "legal", "search", "european union", "eu", "sparql"]
+keywords = ["bulletin", "official", "legal", "european union", "eu", "sparql"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Operating System :: OS Independent",
-    "Intended Audience :: Legal Industry",
+    "Intended Audience :: Legal Professionals",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Text Processing :: General",
-    "License :: OSI Approved :: MIT License",
 ]
 dependencies = [
     "requests>=2.25.0",
@@ -63,10 +57,11 @@ profile = "black"
 line_length = 88
 
 [tool.mypy]
-python_version = "3.7"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = false
+disallow_untyped_defs = true
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 markers = [

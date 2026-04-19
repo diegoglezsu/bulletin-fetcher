@@ -5,7 +5,8 @@ Handles query building and HTTP communication.
 """
 
 from datetime import date
-import requests
+from typing import Optional
+import requests  # type: ignore
 
 from ..constants import SPARQL_ENDPOINT, LANGUAGE_CODE_MAP, DEFAULT_LANGUAGE
 from ..exceptions import EndpointError, QueryError
@@ -22,10 +23,10 @@ class DoueConnector:
         self,
         date: str,
         language: str = DEFAULT_LANGUAGE,
-        date_end: str | None = None,
-        title_contains: str | None = None,
-        category_type: str | None = None,
-        institution_type: str | None = None,
+        date_end: Optional[str] = None,
+        title_contains: Optional[str] = None,
+        category_type: Optional[str] = None,
+        institution_type: Optional[str] = None,
     ) -> str:
         """Build a SPARQL query for Official Journal acts on a given date.
 
@@ -222,7 +223,7 @@ ORDER BY ?code
                 headers={"Accept": "application/sparql-results+json"},
             )
             response.raise_for_status()
-            return response.json()
+            return response.json() # type: ignore
         except requests.exceptions.HTTPError as e:
             raise EndpointError(
                 f"SPARQL endpoint returned HTTP {e.response.status_code}",
@@ -235,7 +236,7 @@ ORDER BY ?code
                 endpoint=self.endpoint,
             ) from e
 
-    def _get_filters(self, date: str, date_end: str | None, title_contains: str | None, category_type: str | None = None, institution_type: str | None = None) -> list[str]:
+    def _get_filters(self, date: str, date_end: Optional[str] = None, title_contains: Optional[str] = None, category_type: Optional[str] = None, institution_type: Optional[str] = None) -> list[str]:
         filters: list[str] = []
         if date_end is not None:
             filters.append(f'FILTER(?date >= "{date}"^^xsd:date)')

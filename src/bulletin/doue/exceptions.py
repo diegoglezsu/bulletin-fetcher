@@ -1,6 +1,7 @@
 """
 Custom exceptions for the DOUE subpackage.
 """
+from typing import Optional
 
 
 class BulletinError(Exception):
@@ -14,7 +15,7 @@ class QueryError(BulletinError):
         query: The SPARQL query string that caused the error, if available.
     """
 
-    def __init__(self, message: str, query: str | None = None) -> None:
+    def __init__(self, message: str, query: Optional[str] = None) -> None:
         super().__init__(message)
         self.query = query
 
@@ -30,8 +31,8 @@ class EndpointError(BulletinError):
     def __init__(
         self,
         message: str,
-        status_code: int | None = None,
-        endpoint: str | None = None,
+        status_code: Optional[int] = None,
+        endpoint: Optional[str] = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code

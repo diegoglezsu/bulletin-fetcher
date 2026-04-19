@@ -1,7 +1,7 @@
 """
 High-level client for querying EU Official Journal (DOUE) acts.
 """
-
+from typing import Optional
 from ..repository._connector import DoueConnector
 from ..constants import DEFAULT_LANGUAGE, SPARQL_ENDPOINT
 from ..converters import acts_to_csv, parse_acts_results, parse_category_types_results, parse_institution_types_results
@@ -15,7 +15,7 @@ class DoueBulletinClient:
         self._connector = DoueConnector(endpoint=endpoint, timeout=timeout)
 
     def get_acts(
-        self, date: str, language: str = DEFAULT_LANGUAGE, date_end: str | None = None, title_contains: str | None = None, category_type: str | None = None, institution_type: str | None = None
+        self, date: str, language: str = DEFAULT_LANGUAGE, date_end: Optional[str] = None, title_contains: Optional[str] = None, category_type: Optional[str] = None, institution_type: Optional[str] = None
     ) -> list[DoueOfficialAct]:
         """Fetch Official Journal acts for a given publication date.
 
@@ -34,7 +34,7 @@ class DoueBulletinClient:
         response = self._connector.execute_query(query)
         return parse_acts_results(response)
 
-    def get_acts_csv(self, date: str, date_end: str | None = None, title_contains: str | None = None, category_type: str | None = None, institution_type: str | None = None, language: str = DEFAULT_LANGUAGE) -> str:
+    def get_acts_csv(self, date: str, date_end: Optional[str] = None, title_contains: Optional[str] = None, category_type: Optional[str] = None, institution_type: Optional[str] = None, language: str = DEFAULT_LANGUAGE) -> str:
         """
         Fetch Official Journal acts for a given date and return CSV output. Uses get_acts internally, so supports the same filters.
 
