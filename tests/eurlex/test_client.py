@@ -1,7 +1,6 @@
 """Unit tests for EurlexBulletinClient."""
 
 from datetime import date
-import json
 from unittest.mock import patch
 
 import pytest
@@ -22,6 +21,25 @@ def mock_connector():
 def client(mock_connector):
     """Fixture providing a EurlexBulletinClient with mocked connector."""
     return EurlexBulletinClient()
+
+
+@pytest.fixture
+def sample_act():
+    """Fixture providing a representative parsed EUR-Lex act."""
+    return EurlexOfficialAct(
+        celex_uri="https://example.com/act1",
+        act_number="2025/1",
+        title="Act 1",
+        date=date(2025, 3, 27),
+        section_code=None,
+        subsection_code=None,
+        category_code=None,
+        category_uri=None,
+        category_label=None,
+        institution_code=None,
+        institution_uri=None,
+        institution_label=None,
+    )
 
 
 class TestInit:
@@ -86,7 +104,12 @@ class TestGetActs:
             result = client.get_acts(test_date)
 
             mock_instance.build_acts_query.assert_called_once_with(
-                test_date, language="ENG", date_end=None, title_contains=None, category_type=None, institution_type=None
+                test_date,
+                language="ENG",
+                date_end=None,
+                title_contains=None,
+                category_type=None,
+                institution_type=None,
             )
             mock_instance.execute_query.assert_called_once_with("SPARQL_QUERY")
             mock_parse.assert_called_once_with(mock_response)
@@ -105,7 +128,12 @@ class TestGetActs:
             client.get_acts(test_date, language=custom_language)
 
             mock_instance.build_acts_query.assert_called_once_with(
-                test_date, language=custom_language, date_end=None, title_contains=None, category_type=None, institution_type=None
+                test_date,
+                language=custom_language,
+                date_end=None,
+                title_contains=None,
+                category_type=None,
+                institution_type=None,
             )
 
     def test_returns_parsed_results(self, client, mock_connector):
@@ -180,7 +208,12 @@ class TestGetActs:
             client.get_acts(test_date, date_end=test_date_end)
 
             mock_instance.build_acts_query.assert_called_once_with(
-                test_date, language="ENG", date_end=test_date_end, title_contains=None, category_type=None, institution_type=None
+                test_date,
+                language="ENG",
+                date_end=test_date_end,
+                title_contains=None,
+                category_type=None,
+                institution_type=None,
             )
 
     def test_with_title_contains(self, client, mock_connector):
@@ -196,7 +229,12 @@ class TestGetActs:
             client.get_acts(test_date, title_contains=title_filter)
 
             mock_instance.build_acts_query.assert_called_once_with(
-                test_date, language="ENG", date_end=None, title_contains=title_filter, category_type=None, institution_type=None
+                test_date,
+                language="ENG",
+                date_end=None,
+                title_contains=title_filter,
+                category_type=None,
+                institution_type=None,
             )
 
     def test_with_date_end_and_title_contains(self, client, mock_connector):
@@ -210,10 +248,17 @@ class TestGetActs:
 
         with patch("bulletin.eurlex.api.client.parse_acts_results") as mock_parse:
             mock_parse.return_value = []
-            client.get_acts(test_date, date_end=test_date_end, title_contains=title_filter)
+            client.get_acts(
+                test_date, date_end=test_date_end, title_contains=title_filter
+            )
 
             mock_instance.build_acts_query.assert_called_once_with(
-                test_date, language="ENG", date_end=test_date_end, title_contains=title_filter, category_type=None, institution_type=None
+                test_date,
+                language="ENG",
+                date_end=test_date_end,
+                title_contains=title_filter,
+                category_type=None,
+                institution_type=None,
             )
 
     def test_with_category_type(self, client, mock_connector):
@@ -229,118 +274,75 @@ class TestGetActs:
             client.get_acts(test_date, category_type=category_type)
 
             mock_instance.build_acts_query.assert_called_once_with(
-                test_date, language="ENG", date_end=None, title_contains=None, category_type=category_type, institution_type=None
+                test_date,
+                language="ENG",
+                date_end=None,
+                title_contains=None,
+                category_type=category_type,
+                institution_type=None,
             )
 
 
-class TestGetActsCsv:
-    """Tests for get_acts_csv method."""
+class TestGetActsOutputFormat:
+    """Tests for get_acts output_format support."""
 
-    def test_returns_csv(self, client) -> None:
-        """Test get_acts_csv returns CSV text."""
+    def test_none_format_returns_models(
+        self, client, mock_connector, sample_act
+    ) -> None:
+        """Test get_acts can explicitly return model objects."""
         test_date = "2025-03-27"
-        acts = [
-            EurlexOfficialAct(
-                celex_uri="https://example.com/act1",
-                act_number="2025/1",
-                title="Act 1",
-                date=date(2025, 3, 27),
-                section_code=None,
-                subsection_code=None,
-                category_code=None,
-                category_uri=None,
-                category_label=None,
-                institution_code=None,
-                institution_uri=None,
-                institution_label=None,
-            )
-        ]
+        mock_response = {"results": {"bindings": []}}
+        mock_instance = mock_connector.return_value
+        mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+        mock_instance.execute_query.return_value = mock_response
 
-        with patch.object(client, "get_acts", return_value=acts) as mock_get:
-            csv_text = client.get_acts_csv(test_date)
+        with patch("bulletin.eurlex.api.client.parse_acts_results") as mock_parse:
+            mock_parse.return_value = [sample_act]
+            result = client.get_acts(test_date, output_format=None)
 
-        assert "\"celex_uri\",\"act_number\",\"title\",\"date\"" in csv_text
-        assert "\"https://example.com/act1\",\"2025/1\",\"Act 1\",\"2025-03-27\"" in csv_text
-        mock_get.assert_called_once_with(test_date, language="ENG", date_end=None, title_contains=None, category_type=None, institution_type=None)
-
-    def test_with_date_end_and_title_contains(self, client) -> None:
-        """Test get_acts_csv with date_end and title_contains parameters."""
-        test_date = "2025-03-27"
-        test_date_end = "2025-03-31"
-        title_filter = "regulation"
-        acts = [
-            EurlexOfficialAct(
-                celex_uri="https://example.com/act1",
-                act_number="2025/1",
-                title="Regulation about X",
-                date=date(2025, 3, 27),
-                section_code=None,
-                subsection_code=None,
-                category_code=None,
-                category_uri=None,
-                category_label=None,
-                institution_code=None,
-                institution_uri=None,
-                institution_label=None,
-            )
-        ]
-
-        with patch.object(client, "get_acts", return_value=acts) as mock_get:
-            csv_text = client.get_acts_csv(
-                test_date, date_end=test_date_end, title_contains=title_filter
-            )
-
-        assert "\"celex_uri\",\"act_number\",\"title\",\"date\"" in csv_text
-        mock_get.assert_called_once_with(
-            test_date, language="ENG", date_end=test_date_end, title_contains=title_filter, category_type=None, institution_type=None
+        assert result == [sample_act]
+        mock_instance.build_acts_query.assert_called_once_with(
+            test_date,
+            language="ENG",
+            date_end=None,
+            title_contains=None,
+            category_type=None,
+            institution_type=None,
         )
+        mock_instance.execute_query.assert_called_once_with("SPARQL_QUERY")
+        mock_parse.assert_called_once_with(mock_response)
 
-    def test_with_category_type(self, client):
-        """Test get_acts_csv with category_type parameter."""
+    def test_json_format_returns_serializable_dicts(
+        self, client, mock_connector, sample_act
+    ) -> None:
+        """Test get_acts returns JSON-compatible dictionaries."""
         test_date = "2025-03-27"
-        category_type = "RES"
-        
-        with patch.object(client, "get_acts", return_value=[]) as mock_get:
-            client.get_acts_csv(test_date, category_type=category_type)
+        mock_response = {"results": {"bindings": []}}
+        mock_instance = mock_connector.return_value
+        mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+        mock_instance.execute_query.return_value = mock_response
 
-        mock_get.assert_called_once_with(
-            test_date, language="ENG", date_end=None, title_contains=None, category_type="RES", institution_type=None
-        )
+        with patch("bulletin.eurlex.api.client.parse_acts_results") as mock_parse:
+            mock_parse.return_value = [sample_act]
+            json_list = client.get_acts(test_date, output_format="json")
 
-
-class TestGetActsJson:
-    """Tests for get_acts_json method."""
-
-    def test_returns_json(self, client) -> None:
-        """Test get_acts_json returns JSON text."""
-        test_date = "2025-03-27"
-        acts = [
-            EurlexOfficialAct(
-                celex_uri="https://example.com/act1",
-                act_number="2025/1",
-                title="Act 1",
-                date=date(2025, 3, 27),
-                section_code=None,
-                subsection_code=None,
-                category_code=None,
-                category_uri=None,
-                category_label=None,
-                institution_code=None,
-                institution_uri=None,
-                institution_label=None,
-            )
+        assert json_list == [
+            {
+                "celex_uri": "https://example.com/act1",
+                "act_number": "2025/1",
+                "title": "Act 1",
+                "date": "2025-03-27",
+                "section_code": None,
+                "subsection_code": None,
+                "category_code": None,
+                "category_uri": None,
+                "category_label": None,
+                "institution_code": None,
+                "institution_uri": None,
+                "institution_label": None,
+            }
         ]
-
-        with patch.object(client, "get_acts", return_value=acts) as mock_get:
-            json_list = client.get_acts_json(test_date)
-
-
-        assert len(json_list) == 1
-        assert json_list[0]["celex_uri"] == "https://example.com/act1"
-        assert json_list[0]["act_number"] == "2025/1"
-        assert json_list[0]["title"] == "Act 1"
-        assert json_list[0]["date"] == "2025-03-27"
-        mock_get.assert_called_once_with(
+        mock_instance.build_acts_query.assert_called_once_with(
             test_date,
             language="ENG",
             date_end=None,
@@ -349,69 +351,117 @@ class TestGetActsJson:
             institution_type=None,
         )
 
-    def test_returns_empty_json(self, client) -> None:
+    def test_csv_format_returns_csv_text(
+        self, client, mock_connector, sample_act
+    ) -> None:
+        """Test get_acts returns CSV text."""
         test_date = "2025-03-27"
+        mock_instance = mock_connector.return_value
+        mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+        mock_instance.execute_query.return_value = {"results": {"bindings": []}}
 
-        with patch.object(client, "get_acts", return_value=[]) as mock_get:
-            json_list = client.get_acts_json(test_date)
+        with patch("bulletin.eurlex.api.client.parse_acts_results") as mock_parse:
+            mock_parse.return_value = [sample_act]
+            csv_text = client.get_acts(test_date, output_format="csv")
+
+        assert '"celex_uri","act_number","title","date"' in csv_text
+        assert '"https://example.com/act1","2025/1","Act 1","2025-03-27"' in csv_text
+        mock_instance.build_acts_query.assert_called_once_with(
+            test_date,
+            language="ENG",
+            date_end=None,
+            title_contains=None,
+            category_type=None,
+            institution_type=None,
+        )
+
+    def test_empty_results_with_json_format(self, client, mock_connector) -> None:
+        """Test get_acts returns an empty list for empty JSON output."""
+        test_date = "2025-03-27"
+        mock_instance = mock_connector.return_value
+        mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+        mock_instance.execute_query.return_value = {"results": {"bindings": []}}
+
+        with patch("bulletin.eurlex.api.client.parse_acts_results") as mock_parse:
+            mock_parse.return_value = []
+            json_list = client.get_acts(test_date, output_format="json")
 
         assert json_list == []
-        mock_get.assert_called_once_with(
-            test_date,
-            language="ENG",
-            date_end=None,
-            title_contains=None,
-            category_type=None,
-            institution_type=None,
-        )
 
-    def test_with_date_end_and_title_contains(self, client) -> None:
-        """Test get_acts_json with date_end and title_contains parameters."""
+    def test_format_is_case_insensitive_and_trims_whitespace(
+        self, client, mock_connector, sample_act
+    ) -> None:
+        """Test get_acts normalizes output_format values."""
+        test_date = "2025-03-27"
+        mock_instance = mock_connector.return_value
+        mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+        mock_instance.execute_query.return_value = {"results": {"bindings": []}}
+
+        with patch("bulletin.eurlex.api.client.parse_acts_results") as mock_parse:
+            mock_parse.return_value = [sample_act]
+            csv_text = client.get_acts(test_date, output_format=" CSV ")
+
+        assert '"https://example.com/act1","2025/1","Act 1","2025-03-27"' in csv_text
+
+    def test_format_does_not_change_supported_filters(
+        self, client, mock_connector, sample_act
+    ) -> None:
+        """Test output_format works with all get_acts filters."""
         test_date = "2025-03-27"
         test_date_end = "2025-03-31"
         title_filter = "regulation"
-        acts = [
-            EurlexOfficialAct(
-                celex_uri="https://example.com/act1",
-                act_number="2025/1",
-                title="Regulation about X",
-                date=date(2025, 3, 27),
-                section_code=None,
-                subsection_code=None,
-                category_code=None,
-                category_uri=None,
-                category_label=None,
-                institution_code=None,
-                institution_uri=None,
-                institution_label=None,
-            )
-        ]
+        mock_instance = mock_connector.return_value
+        mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+        mock_instance.execute_query.return_value = {"results": {"bindings": []}}
 
-        with patch.object(client, "get_acts", return_value=acts) as mock_get:
-            json_list = client.get_acts_json(
-                test_date, date_end=test_date_end, title_contains=title_filter
+        with patch("bulletin.eurlex.api.client.parse_acts_results") as mock_parse:
+            mock_parse.return_value = [sample_act]
+            client.get_acts(
+                test_date,
+                language="FRA",
+                date_end=test_date_end,
+                title_contains=title_filter,
+                category_type="RES",
+                institution_type="COM",
+                output_format="json",
             )
 
-        assert len(json_list) == 1
-        assert json_list[0]["celex_uri"] == "https://example.com/act1"
-        assert json_list[0]["act_number"] == "2025/1"
-        assert json_list[0]["title"] == "Regulation about X"
-
-        mock_get.assert_called_once_with(
-            test_date, language="ENG", date_end=test_date_end, title_contains=title_filter, category_type=None, institution_type=None
+        mock_instance.build_acts_query.assert_called_once_with(
+            test_date,
+            language="FRA",
+            date_end=test_date_end,
+            title_contains=title_filter,
+            category_type="RES",
+            institution_type="COM",
         )
 
-    def test_with_category_type(self, client):
-        """Test get_acts_json with category_type parameter."""
-        test_date = "2025-03-27"
-        category_type = "RES"
-        
-        with patch.object(client, "get_acts", return_value=[]) as mock_get:
-            client.get_acts_json(test_date, category_type=category_type)
+    def test_invalid_format_raises_before_querying(
+        self, client, mock_connector
+    ) -> None:
+        """Test invalid output formats fail before touching the connector."""
+        with pytest.raises(ValueError, match="Unsupported acts output format"):
+            client.get_acts("2025-03-27", output_format="xml")
 
-        mock_get.assert_called_once_with(
-            test_date, language="ENG", date_end=None, title_contains=None, category_type="RES", institution_type=None
-        )
+        mock_instance = mock_connector.return_value
+        mock_instance.build_acts_query.assert_not_called()
+        mock_instance.execute_query.assert_not_called()
+
+    def test_non_string_format_raises_before_querying(
+        self, client, mock_connector
+    ) -> None:
+        """Test output_format only accepts strings or None."""
+        with pytest.raises(TypeError, match="output_format must be a string or None"):
+            client.get_acts("2025-03-27", output_format=123)
+
+        mock_instance = mock_connector.return_value
+        mock_instance.build_acts_query.assert_not_called()
+        mock_instance.execute_query.assert_not_called()
+
+    def test_removed_format_specific_methods(self) -> None:
+        """Test legacy format-specific methods are no longer exposed."""
+        assert not hasattr(EurlexBulletinClient, "get_acts_csv")
+        assert not hasattr(EurlexBulletinClient, "get_acts_json")
+
 
 class TestGetCategoryTypes:
     """Tests for get_category_types method."""
@@ -446,7 +496,9 @@ class TestGetInstitutionTypes:
     def test_fetches_institution_types(self, client, mock_connector):
         """Test fetching institution types from the client."""
         mock_instance = mock_connector.return_value
-        mock_instance.build_institution_types_query.return_value = "INSTITUTION_TYPES_QUERY"
+        mock_instance.build_institution_types_query.return_value = (
+            "INSTITUTION_TYPES_QUERY"
+        )
         mock_instance.execute_query.return_value = {
             "results": {
                 "bindings": [
@@ -458,7 +510,9 @@ class TestGetInstitutionTypes:
 
         result = client.get_institution_types(language="ENG")
 
-        mock_instance.build_institution_types_query.assert_called_once_with(language="ENG")
+        mock_instance.build_institution_types_query.assert_called_once_with(
+            language="ENG"
+        )
         mock_instance.execute_query.assert_called_once_with("INSTITUTION_TYPES_QUERY")
         assert len(result) == 2
         assert result[0].code == "COM"

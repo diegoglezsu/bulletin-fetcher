@@ -41,3 +41,13 @@ SUPPORTED_LANGUAGE_CODES = tuple(LANGUAGE_CODE_MAP)
 
 #: Default language code used by the client when no language is provided.
 DEFAULT_LANGUAGE = "ENG"
+
+#: Available acts output formats
+ACTS_OUTPUT_FORMAT_JSON = "json"
+ACTS_OUTPUT_FORMAT_CSV = "csv"
+SUPPORTED_ACTS_OUTPUT_FORMATS = frozenset(
+    {
+        ACTS_OUTPUT_FORMAT_JSON,
+        ACTS_OUTPUT_FORMAT_CSV,
+    }
+)

@@ -4,6 +4,7 @@ import sys
 
 from bulletin.eurlex.api.client import EurlexBulletinClient
 
+
 def main() -> int:
 
     client = EurlexBulletinClient()
@@ -12,10 +13,17 @@ def main() -> int:
     date_end = "2025-03-31"
     title_contains = "artificial intelligence"
     language = "ENG"
-    #category_type = "ANNOUNC"
+    # category_type = "ANNOUNC"
 
     try:
-        acts = client.get_acts(date=date, language=language, date_end=date_end, title_contains=title_contains, category_type=None, institution_type=None)
+        acts = client.get_acts(
+            date=date,
+            language=language,
+            date_end=date_end,
+            title_contains=title_contains,
+            category_type=None,
+            institution_type=None,
+        )
     except Exception as exc:
         print(f"Error while fetching acts: {exc}", file=sys.stderr)
         return 1
@@ -38,12 +46,24 @@ def main() -> int:
     print("\n" + "=" * 60 + "\n")
 
     # Get data in CSV
-    csv_output = client.get_acts_csv(date=date, date_end=date_end, title_contains=title_contains, language=language) 
+    csv_output = client.get_acts(
+        date=date,
+        date_end=date_end,
+        title_contains=title_contains,
+        language=language,
+        output_format="csv",
+    )
     print("CSV Output:")
     print(csv_output)
 
     # Get data in JSON
-    json_output = client.get_acts_json(date=date, date_end=date_end, title_contains=title_contains, language=language) 
+    json_output = client.get_acts(
+        date=date,
+        date_end=date_end,
+        title_contains=title_contains,
+        language=language,
+        output_format="json",
+    )
     print("JSON Output:")
     print(json_output)
 

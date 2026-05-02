@@ -32,6 +32,14 @@ acts = client.get_acts(
     language="ENG"
 )
 
+acts_json = client.get_acts(
+    date="2025-01-01",
+    date_end="2025-03-31",
+    title_contains="artificial intelligence",
+    language="ENG",
+    output_format="json",
+)
+
 print(f"Total acts: {len(acts)}")
 if acts:
     first = acts[0]

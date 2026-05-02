@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 from bulletin.eurlex.api.client import EurlexBulletinClient
 
+
 def main() -> int:
     client = EurlexBulletinClient()
 
@@ -36,17 +37,21 @@ def main() -> int:
 
     try:
         print("Consulting the EUR-Lex SPARQL endpoint... (this may take a few seconds)")
-        
-        # We use get_acts_csv which internally extracts all metadata and formats it to CSV
-        csv_data = client.get_acts_csv(
+
+        # Ask get_acts to extract all metadata and format it as CSV.
+        csv_data = client.get_acts(
             date=DATE_START,
             date_end=DATE_END,
             title_contains=TITLE_KEYWORD,
-            language=LANGUAGE
+            language=LANGUAGE,
+            output_format="csv",
         )
 
     except Exception as exc:
-        print(f"\n[ERROR] An error occurred while downloading the data:\n{exc}", file=sys.stderr)
+        print(
+            f"\n[ERROR] An error occurred while downloading the data:\n{exc}",
+            file=sys.stderr,
+        )
         return 1
 
     # Save file in this directory, so that it can be easily found by the user
@@ -57,10 +62,14 @@ def main() -> int:
             f.write(csv_data)
         print(f"\n[SUCCESS] Dataset generated correctly and saved in: {OUTPUT_FILE}")
     except Exception as exc:
-        print(f"\n[ERROR] Error occurred while saving the CSV file:\n{exc}", file=sys.stderr)
+        print(
+            f"\n[ERROR] Error occurred while saving the CSV file:\n{exc}",
+            file=sys.stderr,
+        )
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
