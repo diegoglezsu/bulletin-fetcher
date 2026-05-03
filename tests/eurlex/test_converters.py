@@ -1,11 +1,19 @@
 """Unit tests for converters utilities."""
 
 from datetime import date
-import json
+import sys
+from types import SimpleNamespace
 
 import pytest
 
-from bulletin.eurlex.converters import acts_to_csv, acts_to_json, parse_acts_results, parse_category_types_results, parse_institution_types_results
+from bulletin.eurlex.converters import (
+    acts_to_csv,
+    acts_to_dataframe,
+    acts_to_json,
+    parse_acts_results,
+    parse_category_types_results,
+    parse_institution_types_results,
+)
 from bulletin.eurlex.api.models import EurlexOfficialAct, CategoryType, InstitutionType
 
 
@@ -144,13 +152,14 @@ class TestActsToCsv:
         rows = csv_text.splitlines()
 
         assert rows[0] == (
-            "\"celex_uri\",\"act_number\",\"title\",\"date\",\"section_code\","
-            "\"subsection_code\",\"category_code\",\"category_uri\",\"category_label\","
-            "\"institution_code\",\"institution_uri\",\"institution_label\""
+            '"celex_uri","act_number","title","date","section_code",'
+            '"subsection_code","category_code","category_uri","category_label",'
+            '"institution_code","institution_uri","institution_label"'
         )
         assert rows[1].startswith(
-            "\"https://example.com/act1\",\"2025/1\",\"Act 1\",\"2025-03-27\""
+            '"https://example.com/act1","2025/1","Act 1","2025-03-27"'
         )
+
 
 class TestActsToJson:
     """Tests for acts_to_json converter."""
@@ -185,6 +194,67 @@ class TestActsToJson:
 
     def test_serializes_empty_list(self) -> None:
         assert acts_to_json([]) == []
+
+
+class TestActsToDataFrame:
+    """Tests for acts_to_dataframe converter."""
+
+    def test_serializes_rows(self, monkeypatch) -> None:
+        class FakeDataFrame:
+            def __init__(self, rows):
+                self.rows = rows
+
+        fake_pandas = SimpleNamespace(DataFrame=FakeDataFrame)
+        monkeypatch.setitem(sys.modules, "pandas", fake_pandas)
+        acts = [
+            EurlexOfficialAct(
+                celex_uri="https://example.com/act1",
+                act_number="2025/1",
+                title="Act 1",
+                date=date(2025, 3, 27),
+                section_code=None,
+                subsection_code=None,
+                category_code=None,
+                category_uri=None,
+                category_label=None,
+                institution_code=None,
+                institution_uri=None,
+                institution_label=None,
+            )
+        ]
+
+        dataframe = acts_to_dataframe(acts)
+
+        assert isinstance(dataframe, FakeDataFrame)
+        assert dataframe.rows == [
+            {
+                "celex_uri": "https://example.com/act1",
+                "act_number": "2025/1",
+                "title": "Act 1",
+                "date": "2025-03-27",
+                "section_code": None,
+                "subsection_code": None,
+                "category_code": None,
+                "category_uri": None,
+                "category_label": None,
+                "institution_code": None,
+                "institution_uri": None,
+                "institution_label": None,
+            }
+        ]
+
+    def test_raises_clear_error_when_pandas_is_missing(self, monkeypatch) -> None:
+        def raise_import_error(name):
+            if name == "pandas":
+                raise ImportError("pandas unavailable")
+            return __import__(name)
+
+        monkeypatch.setattr(
+            "bulletin.eurlex.converters.importlib.import_module", raise_import_error
+        )
+
+        with pytest.raises(ImportError, match="pandas is required"):
+            acts_to_dataframe([])
 
 
 class TestParseCategoryTypesResults:
@@ -250,8 +320,14 @@ class TestParseInstitutionTypesResults:
         response = {
             "results": {
                 "bindings": [
-                    {"code": {"value": "COM"}, "label": {"value": "European Commission"}},
-                    {"code": {"value": "PARL"}, "label": {"value": "European Parliament"}},
+                    {
+                        "code": {"value": "COM"},
+                        "label": {"value": "European Commission"},
+                    },
+                    {
+                        "code": {"value": "PARL"},
+                        "label": {"value": "European Parliament"},
+                    },
                 ]
             }
         }
@@ -264,7 +340,10 @@ class TestParseInstitutionTypesResults:
         response = {
             "results": {
                 "bindings": [
-                    {"code": {"value": "COM"}, "label": {"value": "European Commission"}}
+                    {
+                        "code": {"value": "COM"},
+                        "label": {"value": "European Commission"},
+                    }
                 ]
             }
         }
@@ -274,7 +353,9 @@ class TestParseInstitutionTypesResults:
         assert types[0].label == "European Commission"
 
     def test_raises_for_missing_required_code(self) -> None:
-        response = {"results": {"bindings": [{"label": {"value": "European Commission"}}]}}
+        response = {
+            "results": {"bindings": [{"label": {"value": "European Commission"}}]}
+        }
         with pytest.raises(KeyError, match="Missing required field 'code'"):
             parse_institution_types_results(response)
 
@@ -290,7 +371,9 @@ class TestParseInstitutionTypesResults:
 
     def test_raises_for_invalid_binding_entry(self) -> None:
         response = {"results": {"bindings": ["not-a-mapping"]}}
-        with pytest.raises(TypeError, match="each institution binding must be a mapping"):
+        with pytest.raises(
+            TypeError, match="each institution binding must be a mapping"
+        ):
             parse_institution_types_results(response)
 
     def test_raises_for_missing_bindings(self) -> None:

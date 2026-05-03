@@ -67,6 +67,17 @@ def main() -> int:
     print("JSON Output:")
     print(json_output)
 
+    # Get data in pandas DataFrame format
+    dataframe_output = client.get_acts(
+        date=date,
+        date_end=date_end,
+        title_contains=title_contains,
+        language=language,
+        output_format="df",
+    )
+    print("DataFrame Output:")
+    print(dataframe_output.head())
+
     return 0
 
 

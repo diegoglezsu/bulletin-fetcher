@@ -289,7 +289,7 @@ class TestGetActsOutputFormat:
     def test_none_format_returns_models(
         self, client, mock_connector, sample_act
     ) -> None:
-        """Test get_acts can explicitly return model objects."""
+        """Test get_acts returns model objects when no format is requested."""
         test_date = "2025-03-27"
         mock_response = {"results": {"bindings": []}}
         mock_instance = mock_connector.return_value
@@ -311,6 +311,30 @@ class TestGetActsOutputFormat:
         )
         mock_instance.execute_query.assert_called_once_with("SPARQL_QUERY")
         mock_parse.assert_called_once_with(mock_response)
+
+    def test_objects_format_returns_models(
+        self, client, mock_connector, sample_act
+    ) -> None:
+        """Test get_acts can explicitly return model objects."""
+        test_date = "2025-03-27"
+        mock_response = {"results": {"bindings": []}}
+        mock_instance = mock_connector.return_value
+        mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+        mock_instance.execute_query.return_value = mock_response
+
+        with patch("bulletin.eurlex.api.client.parse_acts_results") as mock_parse:
+            mock_parse.return_value = [sample_act]
+            result = client.get_acts(test_date, output_format="objects")
+
+        assert result == [sample_act]
+        mock_instance.build_acts_query.assert_called_once_with(
+            test_date,
+            language="ENG",
+            date_end=None,
+            title_contains=None,
+            category_type=None,
+            institution_type=None,
+        )
 
     def test_json_format_returns_serializable_dicts(
         self, client, mock_connector, sample_act
@@ -366,6 +390,33 @@ class TestGetActsOutputFormat:
 
         assert '"celex_uri","act_number","title","date"' in csv_text
         assert '"https://example.com/act1","2025/1","Act 1","2025-03-27"' in csv_text
+        mock_instance.build_acts_query.assert_called_once_with(
+            test_date,
+            language="ENG",
+            date_end=None,
+            title_contains=None,
+            category_type=None,
+            institution_type=None,
+        )
+
+    def test_df_format_returns_dataframe(self, client, mock_connector, sample_act):
+        """Test get_acts returns a DataFrame for df output."""
+        test_date = "2025-03-27"
+        dataframe = object()
+        mock_instance = mock_connector.return_value
+        mock_instance.build_acts_query.return_value = "SPARQL_QUERY"
+        mock_instance.execute_query.return_value = {"results": {"bindings": []}}
+
+        with patch("bulletin.eurlex.api.client.parse_acts_results") as mock_parse:
+            mock_parse.return_value = [sample_act]
+            with patch(
+                "bulletin.eurlex.api.client.acts_to_dataframe",
+                return_value=dataframe,
+            ) as mock_to_dataframe:
+                result = client.get_acts(test_date, output_format="df")
+
+        assert result is dataframe
+        mock_to_dataframe.assert_called_once_with([sample_act])
         mock_instance.build_acts_query.assert_called_once_with(
             test_date,
             language="ENG",

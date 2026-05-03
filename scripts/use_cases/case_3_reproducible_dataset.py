@@ -38,13 +38,13 @@ def main() -> int:
     try:
         print("Consulting the EUR-Lex SPARQL endpoint... (this may take a few seconds)")
 
-        # Ask get_acts to extract all metadata and format it as CSV.
-        csv_data = client.get_acts(
+        # Ask get_acts to extract all metadata directly as a DataFrame.
+        acts_df = client.get_acts(
             date=DATE_START,
             date_end=DATE_END,
             title_contains=TITLE_KEYWORD,
             language=LANGUAGE,
-            output_format="csv",
+            output_format="df",
         )
 
     except Exception as exc:
@@ -58,8 +58,7 @@ def main() -> int:
     try:
         # Ensure the script directory exists
         SCRIPT_DIR.mkdir(parents=True, exist_ok=True)
-        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-            f.write(csv_data)
+        acts_df.to_csv(OUTPUT_FILE, index=False)
         print(f"\n[SUCCESS] Dataset generated correctly and saved in: {OUTPUT_FILE}")
     except Exception as exc:
         print(

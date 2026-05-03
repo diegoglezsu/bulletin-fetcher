@@ -2,18 +2,24 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 from ..repository._connector import EurlexConnector
 from ..constants import (
+    ACTS_OUTPUT_FORMAT_CSV,
+    ACTS_OUTPUT_FORMAT_JSON,
+    ACTS_OUTPUT_FORMAT_OBJECTS,
+    ACTS_OUTPUT_FORMAT_PANDASDF,
     DEFAULT_LANGUAGE,
     SPARQL_ENDPOINT,
-    ACTS_OUTPUT_FORMAT_JSON,
-    ACTS_OUTPUT_FORMAT_CSV,
     SUPPORTED_ACTS_OUTPUT_FORMATS,
 )
 from ..converters import (
     acts_to_csv,
+    acts_to_dataframe,
     acts_to_json,
     parse_acts_results,
     parse_category_types_results,
@@ -21,12 +27,18 @@ from ..converters import (
 )
 from .models import EurlexOfficialAct, CategoryType, InstitutionType
 
-_ActsOutput = Union[List[EurlexOfficialAct], List[Dict[str, Optional[str]]], str]
+_ActsOutput = Union[
+    List[EurlexOfficialAct],
+    List[Dict[str, Optional[str]]],
+    str,
+    "pd.DataFrame",
+]
+
 
 def _normalize_acts_output_format(output_format: Optional[str]) -> str:
     """Normalize and validate the requested acts output format."""
     if output_format is None:
-        return None
+        return ACTS_OUTPUT_FORMAT_OBJECTS
 
     if not isinstance(output_format, str):
         raise TypeError("output_format must be a string or None")
@@ -42,12 +54,14 @@ def _normalize_acts_output_format(output_format: Optional[str]) -> str:
     )
 
 
-def _format_acts(acts: list[EurlexOfficialAct], output_format: Optional[str]) -> _ActsOutput:
+def _format_acts(acts: list[EurlexOfficialAct], output_format: str) -> _ActsOutput:
     """Return acts using the requested output format."""
     if output_format == ACTS_OUTPUT_FORMAT_JSON:
         return acts_to_json(acts)
     if output_format == ACTS_OUTPUT_FORMAT_CSV:
         return acts_to_csv(acts)
+    if output_format == ACTS_OUTPUT_FORMAT_PANDASDF:
+        return acts_to_dataframe(acts)
     return acts
 
 
@@ -76,7 +90,7 @@ class EurlexBulletinClient:
             title_contains: Case-insensitive substring filter on title.
             category_type: Filter by category type code (e.g. "RES" for Resolution, "ANNOUNC" for Announcement...). More types available at <http://publications.europa.eu/resource/authority/resource-type>. Optional.
             institution_type: Filter by institution type code (e.g. "CONSIL" for Council of the European Union, "COM" for Commission...). More types available at <http://publications.europa.eu/resource/authority/corporate-body>. Optional.
-            output_format: Optional output format. Use None to return a list of `EurlexOfficialAct` objects, "json" to return a JSON-compatible list of dictionaries, or "csv" to return CSV text.
+            output_format: Optional output format. Use None or "objects" to return a list of `EurlexOfficialAct` objects, "json" to return a JSON-compatible list of dictionaries, "csv" to return CSV text, or "df" to return a pandas DataFrame.
         Returns:
             Acts in the requested output format.
 

@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 import csv
-import json
+import importlib
 import io
 from typing import Any
 
@@ -14,15 +14,23 @@ def parse_acts_results(results: Mapping[str, Any]) -> list[EurlexOfficialAct]:
     try:
         bindings = results["results"]["bindings"]
     except KeyError as exc:
-        raise KeyError(INVALID_SPARQL_RESPONSE_ERROR.format("missing 'results.bindings'")) from exc
+        raise KeyError(
+            INVALID_SPARQL_RESPONSE_ERROR.format("missing 'results.bindings'")
+        ) from exc
 
     if not isinstance(bindings, list):
-        raise TypeError(INVALID_SPARQL_RESPONSE_ERROR.format("'bindings' must be a list"))
+        raise TypeError(
+            INVALID_SPARQL_RESPONSE_ERROR.format("'bindings' must be a list")
+        )
 
     acts: list[EurlexOfficialAct] = []
     for binding in bindings:
         if not isinstance(binding, Mapping):
-            raise TypeError(INVALID_SPARQL_RESPONSE_ERROR.format("each Act binding must be a mapping"))
+            raise TypeError(
+                INVALID_SPARQL_RESPONSE_ERROR.format(
+                    "each Act binding must be a mapping"
+                )
+            )
         acts.append(EurlexOfficialAct._from_binding(binding))
 
     return acts
@@ -51,9 +59,23 @@ def acts_to_csv(acts: list[EurlexOfficialAct]) -> str:
         writer.writerow(act._to_dict())
     return buffer.getvalue()
 
+
 def acts_to_json(acts: list[EurlexOfficialAct]) -> list[dict]:
     """Serialize a list of acts to JSON format."""
     return [act._to_dict() for act in acts]
+
+
+def acts_to_dataframe(acts: list[EurlexOfficialAct]) -> Any:
+    """Serialize a list of acts to a pandas DataFrame."""
+    try:
+        pandas = importlib.import_module("pandas")
+    except ImportError as exc:
+        raise ImportError(
+            "pandas is required to use output_format='df'. "
+            "Install pandas or install bulletin-fetcher with its pandas dependency."
+        ) from exc
+
+    return pandas.DataFrame(acts_to_json(acts))
 
 
 def parse_category_types_results(results: Mapping[str, Any]) -> list[CategoryType]:
@@ -61,34 +83,52 @@ def parse_category_types_results(results: Mapping[str, Any]) -> list[CategoryTyp
     try:
         bindings = results["results"]["bindings"]
     except KeyError as exc:
-        raise KeyError(INVALID_SPARQL_RESPONSE_ERROR.format("missing 'results.bindings'")) from exc
+        raise KeyError(
+            INVALID_SPARQL_RESPONSE_ERROR.format("missing 'results.bindings'")
+        ) from exc
 
     if not isinstance(bindings, list):
-        raise TypeError(INVALID_SPARQL_RESPONSE_ERROR.format("'bindings' must be a list"))
+        raise TypeError(
+            INVALID_SPARQL_RESPONSE_ERROR.format("'bindings' must be a list")
+        )
 
     types: list[CategoryType] = []
     for binding in bindings:
         if not isinstance(binding, Mapping):
-            raise TypeError(INVALID_SPARQL_RESPONSE_ERROR.format("each category binding must be a mapping"))
+            raise TypeError(
+                INVALID_SPARQL_RESPONSE_ERROR.format(
+                    "each category binding must be a mapping"
+                )
+            )
         types.append(CategoryType._from_binding(binding))
 
     return types
 
 
-def parse_institution_types_results(results: Mapping[str, Any]) -> list[InstitutionType]:
+def parse_institution_types_results(
+    results: Mapping[str, Any],
+) -> list[InstitutionType]:
     """Parse SPARQL results into a list of InstitutionType objects."""
     try:
         bindings = results["results"]["bindings"]
     except KeyError as exc:
-        raise KeyError(INVALID_SPARQL_RESPONSE_ERROR.format("missing 'results.bindings'")) from exc
+        raise KeyError(
+            INVALID_SPARQL_RESPONSE_ERROR.format("missing 'results.bindings'")
+        ) from exc
 
     if not isinstance(bindings, list):
-        raise TypeError(INVALID_SPARQL_RESPONSE_ERROR.format("'bindings' must be a list"))
+        raise TypeError(
+            INVALID_SPARQL_RESPONSE_ERROR.format("'bindings' must be a list")
+        )
 
     types: list[InstitutionType] = []
     for binding in bindings:
         if not isinstance(binding, Mapping):
-            raise TypeError(INVALID_SPARQL_RESPONSE_ERROR.format("each institution binding must be a mapping"))
+            raise TypeError(
+                INVALID_SPARQL_RESPONSE_ERROR.format(
+                    "each institution binding must be a mapping"
+                )
+            )
         types.append(InstitutionType._from_binding(binding))
 
     return types
