@@ -13,6 +13,12 @@ Install from PyPI:
 pip install bulletin-fetcher
 ```
 
+Install with all dependencies:
+
+```bash
+pip install bulletin-fetcher[all]
+```
+
 Install development dependencies (project clone):
 
 ```bash

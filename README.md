@@ -26,7 +26,7 @@ EU legal acts can be queried through public semantic web infrastructure, but usi
 - Search EU legal acts from the Official Journal of the European Union.
 - Filter acts by date or date range, act type, publishing institution, text contained in the act title, language.
 - Retrieve available act types and publishing institutions.
-- Return act search results as Python objects, JSON-compatible dictionaries, CSV or pandas DataFrames.
+- Return act search results as Python objects, JSON-compatible dictionaries, XML, CSV or pandas DataFrames.
 - Work with Python instead of raw SPARQL queries.
 - Integrate easily with notebooks, data pipelines and legal analytics workflows.
 
@@ -48,6 +48,12 @@ Install from PyPI:
 
 ```bash
 pip install bulletin-fetcher
+```
+
+Install with all dependencies:
+
+```bash
+pip install bulletin-fetcher[all]
 ```
 
 ### Basic Usage Example
