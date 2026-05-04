@@ -262,13 +262,17 @@ class TestActsToXml:
     """Tests for acts_to_xml converter."""
 
     def test_serializes_rows(self, monkeypatch) -> None:
-        class FakeDictToXml:
-            def dicttoxml(self, obj, custom_root, attr_type):
-                return b"<acts><test>success</test></acts>"
+        recorded_call = {}
 
-        fake_dicttoxml_module = SimpleNamespace(dicttoxml=FakeDictToXml().dicttoxml)
+        def fake_dicttoxml(obj, custom_root, attr_type):
+            recorded_call["obj"] = obj
+            recorded_call["custom_root"] = custom_root
+            recorded_call["attr_type"] = attr_type
+            return b"<acts><test>success</test></acts>"
+
+        fake_dicttoxml_module = SimpleNamespace(dicttoxml=fake_dicttoxml)
         monkeypatch.setitem(sys.modules, "dicttoxml", fake_dicttoxml_module)
-        
+
         acts = [
             EurlexOfficialAct(
                 celex_uri="https://example.com/act1",
@@ -287,7 +291,28 @@ class TestActsToXml:
         ]
 
         xml_result = acts_to_xml(acts)
+
         assert xml_result == "<acts><test>success</test></acts>"
+        assert recorded_call == {
+            "obj": [
+                {
+                    "celex_uri": "https://example.com/act1",
+                    "act_number": "2025/1",
+                    "title": "Act 1",
+                    "date": "2025-03-27",
+                    "section_code": None,
+                    "subsection_code": None,
+                    "category_code": None,
+                    "category_uri": None,
+                    "category_label": None,
+                    "institution_code": None,
+                    "institution_uri": None,
+                    "institution_label": None,
+                }
+            ],
+            "custom_root": "acts",
+            "attr_type": False,
+        }
 
     def test_raises_clear_error_when_dicttoxml_is_missing(self, monkeypatch) -> None:
         def raise_import_error(name):

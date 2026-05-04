@@ -19,7 +19,7 @@ The library provides a high-level Python API that allows developers, researchers
 
 EU legal acts can be queried through public semantic web infrastructure, but using the underlying SPARQL endpoint requires knowledge of RDF vocabularies, query structure and EUR-Lex metadata conventions and ontologies.
 
-`bulletin-fetcher` abstracts this complexity behind a simple Python interface. Users can retrieve legal acts by publication date, date ranges, act type, publishing institution and textual content, while receiving Python objects, JSON-compatible dictionaries, CSV outputs or pandas DataFrames suitable for further analysis.
+`bulletin-fetcher` abstracts this complexity behind a simple Python interface. Users can retrieve legal acts by publication date, date ranges, act type, publishing institution and textual content, while receiving Python objects, JSON-compatible dictionaries, XML, CSV outputs or pandas DataFrames suitable for further analysis.
 
 ## Main features
 
@@ -77,6 +77,14 @@ acts_csv = client.get_acts(
     title_contains="artificial intelligence",
     language="ENG",
     output_format="csv",
+)
+
+acts_xml = client.get_acts(
+    date="2025-01-01",
+    date_end="2025-03-31",
+    title_contains="artificial intelligence",
+    language="ENG",
+    output_format="xml",
 )
 
 acts_df = client.get_acts(

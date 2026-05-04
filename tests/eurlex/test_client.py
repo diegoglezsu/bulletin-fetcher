@@ -445,6 +445,14 @@ class TestGetActsOutputFormat:
 
         assert xml_result == "<acts></acts>"
         mock_to_xml.assert_called_once_with([sample_act])
+        mock_instance.build_acts_query.assert_called_once_with(
+            test_date,
+            language="ENG",
+            date_end=None,
+            title_contains=None,
+            category_type=None,
+            institution_type=None,
+        )
 
     def test_empty_results_with_json_format(self, client, mock_connector) -> None:
         """Test get_acts returns an empty list for empty JSON output."""

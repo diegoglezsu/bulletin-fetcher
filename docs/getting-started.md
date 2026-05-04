@@ -46,6 +46,14 @@ acts_json = client.get_acts(
     output_format="json",
 )
 
+acts_xml = client.get_acts(
+    date="2025-01-01",
+    date_end="2025-03-31",
+    title_contains="artificial intelligence",
+    language="ENG",
+    output_format="xml",
+)
+
 acts_df = client.get_acts(
     date="2025-01-01",
     date_end="2025-03-31",

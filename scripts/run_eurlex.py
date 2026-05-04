@@ -56,7 +56,7 @@ def main() -> int:
     print("CSV Output:")
     print(csv_output)
 
-    # get data in xml
+    # Get data in XML
     xml_output = client.get_acts(
         date=date,
         date_end=date_end,

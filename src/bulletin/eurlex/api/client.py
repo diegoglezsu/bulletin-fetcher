@@ -94,7 +94,7 @@ class EurlexBulletinClient:
             title_contains: Case-insensitive substring filter on title.
             category_type: Filter by category type code (e.g. "RES" for Resolution, "ANNOUNC" for Announcement...). More types available at <http://publications.europa.eu/resource/authority/resource-type>. Optional.
             institution_type: Filter by institution type code (e.g. "CONSIL" for Council of the European Union, "COM" for Commission...). More types available at <http://publications.europa.eu/resource/authority/corporate-body>. Optional.
-            output_format: Optional output format. Use None or "objects" to return a list of `EurlexOfficialAct` objects, "json" to return a JSON-compatible list of dictionaries, "csv" to return CSV text, or "df" to return a pandas DataFrame.
+            output_format: Optional output format. Use None or "objects" to return a list of `EurlexOfficialAct` objects, "json" to return a JSON-compatible list of dictionaries, "csv" to return CSV text, "xml" to return XML text, or "df" to return a pandas DataFrame.
         Returns:
             Acts in the requested output format.
 
