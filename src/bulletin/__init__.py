@@ -1,4 +1,4 @@
-__version__ = "0.3.0"
+__version__ = "0.4.1"
 __author__ = "Diego González Suárez"
 __email__ = "gonzalezsdiego@uniovi.es"
 __license__ = "MIT"
