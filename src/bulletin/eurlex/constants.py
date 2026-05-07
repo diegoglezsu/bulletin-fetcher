@@ -24,7 +24,7 @@ LANGUAGE_CODE_MAP = {
     "ELL": "el",
     "EST": "et",
     "FIN": "fi",
-    "GAE": "ga",
+    "GLE": "ga",
     "HRV": "hr",
     "HUN": "hu",
     "LIT": "lt",
