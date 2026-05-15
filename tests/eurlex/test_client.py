@@ -624,13 +624,37 @@ class TestGetCategoryTypes:
 
         result = client.get_category_types(language="ENG")
 
-        mock_instance.build_category_types_query.assert_called_once_with(language="ENG")
+        mock_instance.build_category_types_query.assert_called_once_with(
+            language="ENG", search=None
+        )
         mock_instance.execute_query.assert_called_once_with("CATEGORY_TYPES_QUERY")
         assert len(result) == 2
         assert result[0].code == "REG"
         assert result[0].label == "Regulation"
         assert result[1].code == "DIR"
         assert result[1].label == "Directive"
+
+    def test_fetches_category_types_with_search(self, client, mock_connector):
+        """Test fetching category types with a label search filter."""
+        mock_instance = mock_connector.return_value
+        mock_instance.build_category_types_query.return_value = "CATEGORY_TYPES_QUERY"
+        mock_instance.execute_query.return_value = {
+            "results": {
+                "bindings": [
+                    {"code": {"value": "REG"}, "label": {"value": "Regulation"}},
+                ]
+            }
+        }
+
+        result = client.get_category_types(language="ENG", search="regul")
+
+        mock_instance.build_category_types_query.assert_called_once_with(
+            language="ENG", search="regul"
+        )
+        mock_instance.execute_query.assert_called_once_with("CATEGORY_TYPES_QUERY")
+        assert len(result) == 1
+        assert result[0].code == "REG"
+        assert result[0].label == "Regulation"
 
 
 class TestGetInstitutionTypes:
@@ -654,7 +678,7 @@ class TestGetInstitutionTypes:
         result = client.get_institution_types(language="ENG")
 
         mock_instance.build_institution_types_query.assert_called_once_with(
-            language="ENG"
+            language="ENG", search=None
         )
         mock_instance.execute_query.assert_called_once_with("INSTITUTION_TYPES_QUERY")
         assert len(result) == 2
@@ -662,3 +686,27 @@ class TestGetInstitutionTypes:
         assert result[0].label == "Commission"
         assert result[1].code == "ECJ"
         assert result[1].label == "Court of Justice"
+
+    def test_fetches_institution_types_with_search(self, client, mock_connector):
+        """Test fetching institution types with a label search filter."""
+        mock_instance = mock_connector.return_value
+        mock_instance.build_institution_types_query.return_value = (
+            "INSTITUTION_TYPES_QUERY"
+        )
+        mock_instance.execute_query.return_value = {
+            "results": {
+                "bindings": [
+                    {"code": {"value": "COM"}, "label": {"value": "Commission"}},
+                ]
+            }
+        }
+
+        result = client.get_institution_types(language="ENG", search="comm")
+
+        mock_instance.build_institution_types_query.assert_called_once_with(
+            language="ENG", search="comm"
+        )
+        mock_instance.execute_query.assert_called_once_with("INSTITUTION_TYPES_QUERY")
+        assert len(result) == 1
+        assert result[0].code == "COM"
+        assert result[0].label == "Commission"

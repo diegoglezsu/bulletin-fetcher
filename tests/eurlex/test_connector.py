@@ -92,6 +92,25 @@ class TestBuildCategoryTypesQuery:
         query = connector.build_category_types_query(language="SPA")
         assert 'FILTER(LANG(?label) = "es")' in query
 
+    def test_search_filters_by_label(self, connector):
+        query = connector.build_category_types_query(search="regulation")
+        assert (
+            'FILTER(BOUND(?label) && CONTAINS(LCASE(STR(?label)), '
+            'LCASE("regulation")))'
+        ) in query
+
+    def test_search_is_trimmed(self, connector):
+        query = connector.build_category_types_query(search="  directive  ")
+        assert 'LCASE("directive")' in query
+
+    def test_search_escapes_sparql_literal(self, connector):
+        query = connector.build_category_types_query(search='foo "bar" \\ baz')
+        assert 'LCASE("foo \\"bar\\" \\\\ baz")' in query
+
+    def test_empty_search_raises(self, connector):
+        with pytest.raises(QueryError, match="search filter cannot be empty"):
+            connector.build_category_types_query(search="  ")
+
 
 class TestBuildInstitutionTypesQuery:
     """Tests for build_institution_types_query method."""
@@ -106,6 +125,25 @@ class TestBuildInstitutionTypesQuery:
         query = connector.build_institution_types_query(language="SPA")
         assert "corporate-body" in query
         assert 'FILTER(LANG(?label) = "es")' in query
+
+    def test_search_filters_by_label(self, connector):
+        query = connector.build_institution_types_query(search="commission")
+        assert (
+            'FILTER(BOUND(?label) && CONTAINS(LCASE(STR(?label)), '
+            'LCASE("commission")))'
+        ) in query
+
+    def test_search_is_trimmed(self, connector):
+        query = connector.build_institution_types_query(search="  court  ")
+        assert 'LCASE("court")' in query
+
+    def test_search_escapes_sparql_literal(self, connector):
+        query = connector.build_institution_types_query(search='foo "bar" \\ baz')
+        assert 'LCASE("foo \\"bar\\" \\\\ baz")' in query
+
+    def test_empty_search_raises(self, connector):
+        with pytest.raises(QueryError, match="search filter cannot be empty"):
+            connector.build_institution_types_query(search="  ")
 
 
 class TestBuildActContentUrl:
