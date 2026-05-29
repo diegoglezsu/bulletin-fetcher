@@ -125,7 +125,7 @@ class EurlexBulletinClient:
         returned by `EurlexOfficialAct.celex_uri`.
 
         Args:
-            act_id_or_uri: CELEX id or full resource URI. This is not the
+            act_id_or_uri: CELEX id or full resource CELLEX URI. This is not the
                 Official Journal act number.
             language: ISO 639-3 language code (default: "ENG").
             max_size: Optional maximum content-stream size in bytes.
