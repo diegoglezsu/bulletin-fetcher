@@ -40,7 +40,8 @@ class TestParseActsResults:
 
         assert acts == [
             EurlexOfficialAct(
-                celex_uri="https://publications.europa.eu/resource/celex/32025R0001",
+                act_uri="https://publications.europa.eu/resource/celex/32025R0001",
+                celex_uri="",
                 act_number=None,
                 title="Regulation (EU) 2025/1",
                 date=date(2025, 1, 1),
@@ -134,6 +135,7 @@ class TestActsToCsv:
     def test_serializes_rows(self) -> None:
         acts = [
             EurlexOfficialAct(
+                act_uri="https://eur-lex.europa.eu/eli/act1",
                 celex_uri="https://example.com/act1",
                 act_number="2025/1",
                 title="Act 1",
@@ -153,12 +155,13 @@ class TestActsToCsv:
         rows = csv_text.splitlines()
 
         assert rows[0] == (
-            '"celex_uri","act_number","title","date","section_code",'
+            '"act_uri","celex_uri","act_number","title","date","section_code",'
             '"subsection_code","category_code","category_uri","category_label",'
             '"institution_code","institution_uri","institution_label"'
         )
         assert rows[1].startswith(
-            '"https://example.com/act1","2025/1","Act 1","2025-03-27"'
+            '"https://eur-lex.europa.eu/eli/act1","https://example.com/act1",'
+            '"2025/1","Act 1","2025-03-27"'
         )
 
 
@@ -168,6 +171,7 @@ class TestActsToJson:
     def test_serializes_rows(self) -> None:
         acts = [
             EurlexOfficialAct(
+                act_uri="https://eur-lex.europa.eu/eli/act1",
                 celex_uri="https://example.com/act1",
                 act_number="2025/1",
                 title="Act 1",
@@ -187,6 +191,7 @@ class TestActsToJson:
 
         assert isinstance(json_list, list)
         assert len(json_list) == 1
+        assert json_list[0]["act_uri"] == "https://eur-lex.europa.eu/eli/act1"
         assert json_list[0]["celex_uri"] == "https://example.com/act1"
         assert json_list[0]["act_number"] == "2025/1"
         assert json_list[0]["title"] == "Act 1"
@@ -209,6 +214,7 @@ class TestActsToDataFrame:
         monkeypatch.setitem(sys.modules, "pandas", fake_pandas)
         acts = [
             EurlexOfficialAct(
+                act_uri="https://eur-lex.europa.eu/eli/act1",
                 celex_uri="https://example.com/act1",
                 act_number="2025/1",
                 title="Act 1",
@@ -229,6 +235,7 @@ class TestActsToDataFrame:
         assert isinstance(dataframe, FakeDataFrame)
         assert dataframe.rows == [
             {
+                "act_uri": "https://eur-lex.europa.eu/eli/act1",
                 "celex_uri": "https://example.com/act1",
                 "act_number": "2025/1",
                 "title": "Act 1",
@@ -254,7 +261,10 @@ class TestActsToDataFrame:
             "bulletin.eurlex.converters.importlib.import_module", raise_import_error
         )
 
-        with pytest.raises(ImportError, match=r"Missing dependency: pandas\. Install it or install bulletin-fetcher\[pandas\]\."):
+        with pytest.raises(
+            ImportError,
+            match=r"Missing dependency: pandas\. Install it or install bulletin-fetcher\[pandas\]\.",
+        ):
             acts_to_dataframe([])
 
 
@@ -275,6 +285,7 @@ class TestActsToXml:
 
         acts = [
             EurlexOfficialAct(
+                act_uri="https://eur-lex.europa.eu/eli/act1",
                 celex_uri="https://example.com/act1",
                 act_number="2025/1",
                 title="Act 1",
@@ -296,6 +307,7 @@ class TestActsToXml:
         assert recorded_call == {
             "obj": [
                 {
+                    "act_uri": "https://eur-lex.europa.eu/eli/act1",
                     "celex_uri": "https://example.com/act1",
                     "act_number": "2025/1",
                     "title": "Act 1",
@@ -324,7 +336,10 @@ class TestActsToXml:
             "bulletin.eurlex.converters.importlib.import_module", raise_import_error
         )
 
-        with pytest.raises(ImportError, match=r"Missing dependency: dicttoxml\. Install it or install bulletin-fetcher\[dicttoxml\]\."):
+        with pytest.raises(
+            ImportError,
+            match=r"Missing dependency: dicttoxml\. Install it or install bulletin-fetcher\[dicttoxml\]\.",
+        ):
             acts_to_xml([])
 
 
@@ -370,7 +385,10 @@ class TestParseCategoryTypesResults:
 
     def test_raises_for_invalid_bindings_type(self) -> None:
         response = {"results": {"bindings": {"not": "a-list"}}}
-        with pytest.raises(TypeError, match=r"Invalid SPARQL response: 'results\.bindings' must be a list\."):
+        with pytest.raises(
+            TypeError,
+            match=r"Invalid SPARQL response: 'results\.bindings' must be a list\.",
+        ):
             parse_category_types_results(response)
 
     def test_raises_for_invalid_binding_entry(self) -> None:
@@ -437,7 +455,10 @@ class TestParseInstitutionTypesResults:
 
     def test_raises_for_invalid_bindings_type(self) -> None:
         response = {"results": {"bindings": {"not": "a-list"}}}
-        with pytest.raises(TypeError, match=r"Invalid SPARQL response: 'results\.bindings' must be a list\."):
+        with pytest.raises(
+            TypeError,
+            match=r"Invalid SPARQL response: 'results\.bindings' must be a list\.",
+        ):
             parse_institution_types_results(response)
 
     def test_raises_for_invalid_binding_entry(self) -> None:

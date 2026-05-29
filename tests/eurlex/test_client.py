@@ -27,6 +27,7 @@ def client(mock_connector):
 def sample_act():
     """Fixture providing a representative parsed EUR-Lex act."""
     return EurlexOfficialAct(
+        act_uri="https://eur-lex.europa.eu/eli/act1",
         celex_uri="https://example.com/act1",
         act_number="2025/1",
         title="Act 1",
@@ -87,6 +88,7 @@ class TestGetActs:
         with patch("bulletin.eurlex.api.client.parse_acts_results") as mock_parse:
             mock_parse.return_value = [
                 EurlexOfficialAct(
+                    act_uri="https://eur-lex.europa.eu/eli/act1",
                     celex_uri="https://example.com/act1",
                     act_number=None,
                     title="Act 1",
@@ -146,6 +148,7 @@ class TestGetActs:
 
         expected_acts = [
             EurlexOfficialAct(
+                act_uri="https://eur-lex.europa.eu/eli/act1",
                 celex_uri="https://example.com/act1",
                 act_number=None,
                 title="Act 1",
@@ -160,6 +163,7 @@ class TestGetActs:
                 institution_label=None,
             ),
             EurlexOfficialAct(
+                act_uri="https://eur-lex.europa.eu/eli/act2",
                 celex_uri="https://example.com/act2",
                 act_number=None,
                 title="Act 2",
@@ -352,6 +356,7 @@ class TestGetActsOutputFormat:
 
         assert json_list == [
             {
+                "act_uri": "https://eur-lex.europa.eu/eli/act1",
                 "celex_uri": "https://example.com/act1",
                 "act_number": "2025/1",
                 "title": "Act 1",
@@ -388,8 +393,11 @@ class TestGetActsOutputFormat:
             mock_parse.return_value = [sample_act]
             csv_text = client.get_acts(test_date, output_format="csv")
 
-        assert '"celex_uri","act_number","title","date"' in csv_text
-        assert '"https://example.com/act1","2025/1","Act 1","2025-03-27"' in csv_text
+        assert '"act_uri","celex_uri","act_number","title","date"' in csv_text
+        assert (
+            '"https://eur-lex.europa.eu/eli/act1",'
+            '"https://example.com/act1","2025/1","Act 1","2025-03-27"'
+        ) in csv_text
         mock_instance.build_acts_query.assert_called_once_with(
             test_date,
             language="ENG",
@@ -480,7 +488,10 @@ class TestGetActsOutputFormat:
             mock_parse.return_value = [sample_act]
             csv_text = client.get_acts(test_date, output_format=" CSV ")
 
-        assert '"https://example.com/act1","2025/1","Act 1","2025-03-27"' in csv_text
+        assert (
+            '"https://eur-lex.europa.eu/eli/act1",'
+            '"https://example.com/act1","2025/1","Act 1","2025-03-27"'
+        ) in csv_text
 
     def test_format_does_not_change_supported_filters(
         self, client, mock_connector, sample_act

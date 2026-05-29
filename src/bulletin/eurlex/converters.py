@@ -42,6 +42,7 @@ def parse_acts_results(results: Mapping[str, Any]) -> list[EurlexOfficialAct]:
 def acts_to_csv(acts: list[EurlexOfficialAct]) -> str:
     """Serialize a list of acts to CSV format."""
     fieldnames = [
+        "act_uri",
         "celex_uri",
         "act_number",
         "title",

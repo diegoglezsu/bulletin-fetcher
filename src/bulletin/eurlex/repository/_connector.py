@@ -107,7 +107,7 @@ class EurlexConnector:
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
             SELECT DISTINCT
-            ?act
+            ?act ?celexAct
             (?number AS ?actNumber)
             (?titleValue AS ?title)
             ?date
@@ -123,19 +123,16 @@ class EurlexConnector:
             ?c_act (
                 cdm:official-journal-act_date_publication
                 | cdm:resource_legal_published_in_official-journal/cdm:publication_general_date_publication
-            ) ?date .
+            ) ?date ;
+                   owl:sameAs ?act .
             {date_filters_str}
+
+            FILTER(STRSTARTS(STR(?act), "http://publications.europa.eu/resource/eli/"))
 
             OPTIONAL {{
                 ?c_act owl:sameAs ?celexAct .
-                FILTER(CONTAINS(STR(?celexAct), "/resource/celex/"))
+                FILTER(STRSTARTS(STR(?celexAct), "http://publications.europa.eu/resource/celex/"))
             }}
-            OPTIONAL {{
-                ?c_act owl:sameAs ?ojAct .
-                FILTER(CONTAINS(STR(?ojAct), "/resource/oj/"))
-            }}
-            BIND(COALESCE(?celexAct, ?ojAct) AS ?act)
-            FILTER(BOUND(?act))
 
             ?expr cdm:expression_belongs_to_work ?c_act ;
                     cdm:expression_uses_language <{language_uri}> ;

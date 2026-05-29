@@ -110,6 +110,7 @@ For any questions or suggestions, feel free to reach out to the corresponding au
 
 - **Corresponding Author**: Diego González Suárez
 - **Email**: <gonzalezsdiego@uniovi.es>
+- **Collaborators**: Noelia Rico, Irene Díaz
 
 ## Acknowledgements
 

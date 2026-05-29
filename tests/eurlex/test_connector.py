@@ -23,11 +23,16 @@ class TestBuildActsQuery:
         )
         assert 'FILTER(LANG(?categoryLabelValue) = "en")' in query
 
-    def test_includes_celex_and_oj_resource_uris(self, connector):
+    def test_uses_eli_act_uri_and_optional_celex_uri(self, connector):
         query = connector.build_acts_query("2024-01-01")
-        assert 'CONTAINS(STR(?celexAct), "/resource/celex/")' in query
-        assert 'CONTAINS(STR(?ojAct), "/resource/oj/")' in query
-        assert "BIND(COALESCE(?celexAct, ?ojAct) AS ?act)" in query
+        assert (
+            'FILTER(STRSTARTS(STR(?act), "http://publications.europa.eu/resource/eli/"))'
+            in query
+        )
+        assert (
+            'FILTER(STRSTARTS(STR(?celexAct), "http://publications.europa.eu/resource/celex/"))'
+            in query
+        )
 
     def test_includes_legacy_official_journal_date_path(self, connector):
         query = connector.build_acts_query("2017-01-04")
