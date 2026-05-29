@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bulletin-fetcher"
-version = "0.5.2"
+version = "0.5.3"
 description = "A Python library for programmatic access to EU official bulletins"
 readme = "README.md"
 requires-python = ">=3.7"
