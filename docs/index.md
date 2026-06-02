@@ -32,3 +32,13 @@ bulletin-fetcher can be used for:
 - Regulatory monitoring
 - Reproducible studies based on EU acts
 - Data collection pipelines
+
+## Citation
+
+If you use bulletin-fetcher library in your work, please cite it as a software package.
+
+- **Title:** bulletin-fetcher: A Python library for programmatic access to EU official bulletins
+- **Author:** Diego González-Suárez
+- **DOI:** 10.5281/zenodo.20156191
+
+You can also find the full citation metadata in the repository citation file.

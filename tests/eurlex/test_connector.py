@@ -25,14 +25,20 @@ class TestBuildActsQuery:
 
     def test_uses_eli_act_uri_and_optional_celex_uri(self, connector):
         query = connector.build_acts_query("2024-01-01")
+        assert 'CONTAINS(STR(?eliUri), "/resource/eli/")' in query
+        assert 'CONTAINS(STR(?celexUri), "/resource/celex/")' in query
+        assert 'CONTAINS(STR(?ojUri), "/resource/oj/")' in query
+        assert "BIND(COALESCE(?eliUri, ?celexUri, ?ojUri) AS ?rawAct)" in query
+        assert "SAMPLE(?celexUri) AS ?celexAct" in query
+
+    def test_does_not_require_eli_uri(self, connector):
+        query = connector.build_acts_query("2024-01-01")
         assert (
-            'FILTER(STRSTARTS(STR(?act), "http://publications.europa.eu/resource/eli/"))'
-            in query
+            'FILTER(STRSTARTS(STR(?rawAct), "http://publications.europa.eu/resource/eli/"))'
+            not in query
         )
-        assert (
-            'FILTER(STRSTARTS(STR(?celexAct), "http://publications.europa.eu/resource/celex/"))'
-            in query
-        )
+        assert "FILTER(BOUND(?rawAct))" in query
+        assert "GROUP BY ?act ?date" in query
 
     def test_includes_legacy_official_journal_date_path(self, connector):
         query = connector.build_acts_query("2017-01-04")

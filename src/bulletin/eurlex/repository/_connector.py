@@ -106,33 +106,52 @@ class EurlexConnector:
             PREFIX owl: <http://www.w3.org/2002/07/owl#>
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
-            SELECT DISTINCT
-            ?act ?celexAct
-            (?number AS ?actNumber)
-            (?titleValue AS ?title)
+            SELECT
+            ?act
+            (SAMPLE(?celexUri) AS ?celexAct)
+            (SAMPLE(?number) AS ?actNumber)
+            (SAMPLE(?titleValue) AS ?title)
             ?date
-            (?section AS ?sectionCode)
-            (?subsection AS ?subsectionCode)
-            (REPLACE(STR(?category), ".*/", "") AS ?categoryCode)
-            (?category AS ?categoryUri)
-            (?categoryLabelValue AS ?categoryLabel)
-            (REPLACE(STR(?institution), ".*/", "") AS ?institutionCode)
-            (?institution AS ?institutionUri)
-            (?institutionLabelValue AS ?institutionLabel)
+            (SAMPLE(?section) AS ?sectionCode)
+            (SAMPLE(?subsection) AS ?subsectionCode)
+            (SAMPLE(REPLACE(STR(?category), ".*/", "")) AS ?categoryCode)
+            (SAMPLE(?category) AS ?categoryUri)
+            (SAMPLE(?categoryLabelValue) AS ?categoryLabel)
+            (SAMPLE(REPLACE(STR(?institution), ".*/", "")) AS ?institutionCode)
+            (SAMPLE(?institution) AS ?institutionUri)
+            (SAMPLE(?institutionLabelValue) AS ?institutionLabel)
             WHERE {{
             ?c_act (
                 cdm:official-journal-act_date_publication
                 | cdm:resource_legal_published_in_official-journal/cdm:publication_general_date_publication
-            ) ?date ;
-                   owl:sameAs ?act .
+            ) ?date .
             {date_filters_str}
 
-            FILTER(STRSTARTS(STR(?act), "http://publications.europa.eu/resource/eli/"))
+            OPTIONAL {{
+                ?c_act owl:sameAs ?eliUri .
+                FILTER(CONTAINS(STR(?eliUri), "/resource/eli/"))
+            }}
 
             OPTIONAL {{
-                ?c_act owl:sameAs ?celexAct .
-                FILTER(STRSTARTS(STR(?celexAct), "http://publications.europa.eu/resource/celex/"))
+                ?c_act owl:sameAs ?celexUri .
+                FILTER(CONTAINS(STR(?celexUri), "/resource/celex/"))
             }}
+
+            OPTIONAL {{
+                ?c_act owl:sameAs ?ojUri .
+                FILTER(CONTAINS(STR(?ojUri), "/resource/oj/"))
+            }}
+
+            BIND(COALESCE(?eliUri, ?celexUri, ?ojUri) AS ?rawAct)
+            FILTER(BOUND(?rawAct))
+            BIND(
+                IF(
+                    CONTAINS(STR(?rawAct), "/resource/eli/"),
+                    IRI(REPLACE(STR(?rawAct), "http://publications.europa.eu/resource/eli/", "https://eur-lex.europa.eu/eli/")),
+                    ?rawAct
+                )
+                AS ?act
+            )
 
             ?expr cdm:expression_belongs_to_work ?c_act ;
                     cdm:expression_uses_language <{language_uri}> ;
@@ -163,6 +182,7 @@ class EurlexConnector:
             OPTIONAL {{ ?c_act cdm:resource_legal_number_natural ?resourceLegalNumber . }}
             BIND(COALESCE(STR(?officialJournalActNumber), STR(?resourceLegalNumber)) AS ?number)
             }}
+            GROUP BY ?act ?date
             ORDER BY ?date ?act
         """
 

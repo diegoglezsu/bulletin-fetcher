@@ -17,7 +17,7 @@ All use cases leverage the `EurlexBulletinClient` to query the EUR-Lex SPARQL en
 
 **File**: `scripts/use_cases/case_1_ai_evolution.ipynb`
 
-Tracks legislative activity on Artificial Intelligence over a 10-year period (2017-2026) by querying acts from the Official Journal and visualizing their monthly distribution as a time-series chart. This helps identify when AI-related legislation peaked in the EU.
+Tracks legislative activity on Artificial Intelligence over a 9-year period (2017-2026) by querying acts from the Official Journal and visualizing their monthly distribution as a time-series chart. This helps identify when AI-related legislation peaked in the EU.
 
 **Run**: Open the notebook and execute the cells to query the EUR-Lex endpoint and generate the temporal trend chart.
 
