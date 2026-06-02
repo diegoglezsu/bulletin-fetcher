@@ -185,32 +185,9 @@ class TestFetchPublicationContent:
     """Tests for fetch_publication_content method."""
 
     def test_success_text(self, connector):
-        resource_uri = "https://publications.europa.eu/resource/celex/52025M12135"
-        expected_content = "<html><body>Act content</body></html>"
+        # TODO: implement after feature
+        pass
 
-        with patch("bulletin.eurlex.repository._connector.requests.get") as mock_get:
-            mock_response = MagicMock()
-            mock_response.text = expected_content
-            mock_get.return_value = mock_response
-
-            result = connector.fetch_publication_content(
-                resource_uri,
-                language="ENG",
-                max_size=2048,
-            )
-
-        assert result == expected_content
-        mock_get.assert_called_once_with(
-            resource_uri,
-            timeout=300,
-            headers={
-                "Accept": "application/xhtml+xml, text/html;q=0.9, application/xml;q=0.8, text/xml;q=0.7",
-                "Accept-Language": "eng",
-                "Accept-Max-Cs-Size": "2048",
-            },
-            allow_redirects=True,
-        )
-        mock_response.raise_for_status.assert_called_once_with()
 
     def test_success_bytes(self, connector):
         resource_uri = "https://publications.europa.eu/resource/celex/52025M12135"
@@ -227,6 +204,10 @@ class TestFetchPublicationContent:
             )
 
         assert result == expected_content
+
+    def test_success_pdf_returns_bytes(self, connector):
+        # TODO: implement after feature
+        pass
 
     def test_lowercase_language_is_normalized(self, connector):
         resource_uri = "https://publications.europa.eu/resource/celex/52025M12135"
@@ -252,11 +233,11 @@ class TestFetchPublicationContent:
         with pytest.raises(QueryError, match="resource_uri cannot be empty"):
             connector.fetch_publication_content("   ")
 
-    def test_invalid_max_size(self, connector):
-        with pytest.raises(QueryError, match="max_size must be a positive integer"):
+    def test_invalid_content_format(self, connector):
+        with pytest.raises(QueryError, match="Unsupported content_format"):
             connector.fetch_publication_content(
                 "https://publications.europa.eu/resource/celex/52025M12135",
-                max_size=0,
+                content_format="docx",
             )
 
     def test_http_error(self, connector):

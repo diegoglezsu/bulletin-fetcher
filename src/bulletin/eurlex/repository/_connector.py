@@ -16,8 +16,19 @@ from ..constants import (
     LANGUAGE_CODE_MAP,
     DEFAULT_LANGUAGE,
     CELLAR_DOMAIN,
+    ACT_CONTENT_FORMAT_HTML,
+    ACT_CONTENT_FORMAT_PDF,
+    SUPPORTED_ACT_CONTENT_FORMATS,
 )
 from ..exceptions import EndpointError, QueryError
+
+_CONTENT_ACCEPT_HEADERS = {
+    ACT_CONTENT_FORMAT_HTML: (
+        "application/xhtml+xml, text/html;q=0.9, application/xml;q=0.8, "
+        "text/xml;q=0.7"
+    ),
+    ACT_CONTENT_FORMAT_PDF: "application/pdf",
+}
 
 
 class EurlexConnector:
@@ -301,26 +312,30 @@ class EurlexConnector:
         self,
         resource_uri: str,
         language: str = DEFAULT_LANGUAGE,
-        max_size: Optional[int] = None,
         return_bytes: bool = False,
+        content_format: str = ACT_CONTENT_FORMAT_HTML,
     ) -> Union[str, bytes]:
         """Fetch publication content from EU API.
 
         Args:
             resource_uri: Full Cellar resource URI.
             language: ISO 639-3 language code used by Cellar (e.g. "ENG").
-            max_size: Optional maximum content-stream size in bytes.
             return_bytes: Return raw response bytes instead of decoded text.
+            content_format: Publication format to request from Cellar. Supported
+                values are "html" and "pdf". PDFs are always returned as bytes.
 
         Returns:
-            The response body decoded as text, or raw bytes when return_bytes is True.
+            The response body decoded as text, or raw bytes when return_bytes is True
+            or content_format is "pdf".
 
         Raises:
-            QueryError: If language, resource_uri, or max_size are invalid.
+            QueryError: If language, resource_uri, or content_format are invalid.
             EndpointError: If the request fails or Cellar is unreachable.
         """
         if not resource_uri.strip():
             raise QueryError("resource_uri cannot be empty.")
+
+        content_format = _normalize_content_format(content_format)
 
         language = language.strip().upper()
         if LANGUAGE_CODE_MAP.get(language) is None:
@@ -330,14 +345,9 @@ class EurlexConnector:
             )
 
         headers = {
-            "Accept": "application/xhtml+xml, text/html;q=0.9, application/xml;q=0.8, text/xml;q=0.7",
+            "Accept": _CONTENT_ACCEPT_HEADERS[content_format],
             "Accept-Language": language.lower(),
         }
-
-        if max_size is not None:
-            if max_size <= 0:
-                raise QueryError("max_size must be a positive integer.")
-            headers["Accept-Max-Cs-Size"] = str(max_size)
 
         try:
             response = requests.get(
@@ -347,7 +357,8 @@ class EurlexConnector:
                 allow_redirects=True,
             )
             response.raise_for_status()
-            if return_bytes:
+            # TODO: review content negotiation
+            if return_bytes or content_format == ACT_CONTENT_FORMAT_PDF:
                 return response.content
             return response.text
         except requests.exceptions.HTTPError as e:
@@ -445,3 +456,18 @@ def _parse_date(value: str) -> date:
 
 def _escape_sparql_literal(value: str) -> str:
     return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _normalize_content_format(content_format: str) -> str:
+    if not isinstance(content_format, str):
+        raise QueryError("content_format must be a string.")
+
+    normalized = content_format.strip().lower()
+    if normalized in SUPPORTED_ACT_CONTENT_FORMATS:
+        return normalized
+
+    supported = ", ".join(sorted(SUPPORTED_ACT_CONTENT_FORMATS))
+    raise QueryError(
+        f"Unsupported content_format: {content_format!r}. "
+        f"Supported formats are: {supported}."
+    )

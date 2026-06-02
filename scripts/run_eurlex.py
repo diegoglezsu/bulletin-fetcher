@@ -58,8 +58,11 @@ def main() -> int:
             content = client.get_act_content(
                 "52025M12135",
                 language=language,
-                max_size=500_000,
+                content_format="pdf",
             )
+            # Save the pdf content to a file
+            with open("./scripts/act_content.pdf", "wb") as f:
+                f.write(content)
         except Exception as exc:
             print(f"Error while fetching act content: {exc}", file=sys.stderr)
         else:
@@ -86,7 +89,7 @@ def main() -> int:
     today_acts = client.get_acts(date=datetime.date.today().isoformat())
     print(f"Acts published on {datetime.date.today().isoformat()}: {len(today_acts)}")
     for act in today_acts:
-        print(f"- {act.title} ({act.date}) {act.institution_label}")
+        print(f"- {act.title} ({act.celex_uri}) {act.institution_label}")
     print("Today documents can be checked at https://eur-lex.europa.eu/oj/direct-access.html")
     
     '''

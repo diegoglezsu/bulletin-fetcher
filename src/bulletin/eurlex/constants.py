@@ -57,3 +57,13 @@ SUPPORTED_ACTS_OUTPUT_FORMATS = frozenset(
         ACTS_OUTPUT_FORMAT_PANDASDF,
     }
 )
+
+#: Available act content formats retrieved through Cellar content negotiation.
+ACT_CONTENT_FORMAT_HTML = "html"
+ACT_CONTENT_FORMAT_PDF = "pdf"
+SUPPORTED_ACT_CONTENT_FORMATS = frozenset(
+    {
+        ACT_CONTENT_FORMAT_HTML,
+        ACT_CONTENT_FORMAT_PDF,
+    }
+)
