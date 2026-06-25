@@ -7,6 +7,18 @@ authors:
   - family-names: "González-Suárez"
     given-names: "Diego"
     orcid: "https://orcid.org/0009-0004-6388-5333"
+    email: "gonzalezsdiego@uniovi.es"
+    affiliation: "University of Oviedo"
+  - family-names: "Rico"
+    given-names: "Noelia"
+    orcid: "https://orcid.org/0000-0002-6169-4523"
+    email: "noeliarico@uniovi.es"
+    affiliation: "University of Oviedo"
+  - family-names: "Díaz"
+    given-names: "Irene"
+    orcid: "https://orcid.org/0000-0002-3024-6605"
+    email: "sirene@uniovi.es"
+    affiliation: "University of Oviedo"
 
 abstract: >
   EU Official Journal acts can be queried through public semantic web infrastructure, but using the underlying SPARQL endpoint requires knowledge of RDF vocabularies, query structure and EUR-Lex metadata conventions and ontologies. The bulletin-fetcher library abstracts this complexity behind a simple Python interface. Users can retrieve Official Journal acts by publication date, date ranges, act type, publishing institution and textual content, while receiving Python objects, JSON-compatible dictionaries, XML, CSV outputs or pandas DataFrames suitable for further analysis.
