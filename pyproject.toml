@@ -4,13 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bulletin-fetcher"
-version = "0.5.7"
+version = "0.5.8"
 description = "A Python library for programmatic access to EU official bulletins"
 readme = "README.md"
 requires-python = ">=3.7"
 license-files = ["LICENSE"]
 authors = [
-    {name = "Diego González Suárez", email = "gonzalezsdiego@uniovi.es"}
+    {name = "Diego González Suárez", email = "gonzalezsdiego@uniovi.es"},
+    {name = "Noelia Rico", email = "noeliarico@uniovi.es"},
+    {name = "Irene Díaz", email = "sirene@uniovi.es"}
 ]
 keywords = ["official gazette", "european legislation", "sparql", "semantic web", "eurlex", "cellar", "data analysis", "policy research", "legal analytics"]
 classifiers = [
