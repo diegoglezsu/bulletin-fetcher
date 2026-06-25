@@ -560,8 +560,20 @@ class TestGetActContent:
 
     def test_fetches_content_from_celex_id(self, client, mock_connector):
         """Test fetching act content from a CELEX id."""
-        # TODO: implement after feature
-        pass
+        mock_instance = mock_connector.return_value
+        mock_instance.build_act_content_url.return_value = (
+            "https://publications.europa.eu/resource/celex/52025M12135"
+        )
+        mock_instance.fetch_publication_content.return_value = "<html></html>"
+
+        result = client.get_act_content("52025M12135")
+
+        mock_instance.build_act_content_url.assert_called_once_with("52025M12135")
+        mock_instance.fetch_publication_content.assert_called_once_with(
+            "https://publications.europa.eu/resource/celex/52025M12135",
+            language="ENG",
+        )
+        assert result == "<html></html>"
 
 
 class TestGetCategoryTypes:

@@ -121,11 +121,40 @@ class TestParseActsResults:
         with pytest.raises(TypeError, match="'bindings' must be a list"):
             parse_acts_results(response)
 
+    def test_with_language_sets_pdf_url(self) -> None:
+        """Test that language param produces pdf_url on acts."""
+        response = {
+            "results": {
+                "bindings": [
+                    {
+                        "act": {
+                            "value": "https://eur-lex.europa.eu/eli/C/2025/6050"
+                        },
+                        "title": {"value": "Test Act"},
+                        "date": {"value": "2025-01-01"},
+                    }
+                ]
+            }
+        }
+
+        acts = parse_acts_results(response, language="ENG")
+        assert acts[0].pdf_url == (
+            "https://eur-lex.europa.eu/legal-content/EN"
+            "/TXT/PDF/?uri=OJ:C_202506050"
+        )
+
     def test_raises_for_invalid_binding_entry(self) -> None:
         """Test that parsing raises error when binding is not a mapping."""
         response = {"results": {"bindings": ["not-a-mapping"]}}
 
         with pytest.raises(TypeError, match="each Act binding must be a mapping"):
+            parse_acts_results(response)
+
+    def test_raises_for_missing_bindings_key(self) -> None:
+        """Test that parsing raises error when results.bindings is missing."""
+        response = {"results": {}}
+
+        with pytest.raises(KeyError, match="missing 'results.bindings' key"):
             parse_acts_results(response)
 
 
@@ -403,7 +432,6 @@ class TestParseCategoryTypesResults:
         with pytest.raises(KeyError, match=r"missing 'results\.bindings' key\."):
             parse_category_types_results(response)
 
-
 class TestParseInstitutionTypesResults:
     """Tests for parse_institution_types_results converter."""
 
@@ -474,3 +502,5 @@ class TestParseInstitutionTypesResults:
         response = {"results": {}}
         with pytest.raises(KeyError, match=r"missing 'results\.bindings' key\."):
             parse_institution_types_results(response)
+
+

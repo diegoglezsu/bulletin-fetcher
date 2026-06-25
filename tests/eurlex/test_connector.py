@@ -89,6 +89,22 @@ class TestBuildActsQuery:
         with pytest.raises(QueryError, match="date_end must be on or after date"):
             connector.build_acts_query(date="2024-01-10", date_end="2024-01-01")
 
+    def test_invalid_date_end_value(self, connector):
+        with pytest.raises(QueryError, match="Invalid date format"):
+            connector.build_acts_query(date="2024-01-01", date_end="2024-99-99")
+
+    def test_invalid_title_contains(self, connector):
+        with pytest.raises(QueryError, match="title_contains filter cannot be empty"):
+            connector.build_acts_query(date="2024-01-01", title_contains="  ")
+
+    def test_institution_type(self, connector):
+        query = connector.build_acts_query(date="2024-01-01", institution_type="COM")
+        assert 'FILTER(REPLACE(STR(?institution), ".*/", "") = "COM")' in query
+
+    def test_invalid_institution_type(self, connector):
+        with pytest.raises(QueryError, match="institution_type filter cannot be empty"):
+            connector.build_acts_query(date="2024-01-01", institution_type="  ")
+
 
 class TestBuildCategoryTypesQuery:
     """Tests for build_category_types_query method."""
