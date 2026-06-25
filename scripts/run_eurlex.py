@@ -39,6 +39,7 @@ def main() -> int:
         print(f"CELEX URI: {act.celex_uri}")
         print(f"Title: {act.title}")
         print(f"Date: {act.date}")
+        print("PDF URL:", act.pdf_url if act.pdf_url else "N/A")
         if act.category_label:
             print(f"Category: {act.category_label}")
         if act.institution_label:
@@ -56,9 +57,8 @@ def main() -> int:
 
         try:
             content = client.get_act_content(
-                "52025M12135",
+                first_act.celex_uri,
                 language=language,
-                max_size=500_000,
             )
         except Exception as exc:
             print(f"Error while fetching act content: {exc}", file=sys.stderr)
@@ -86,7 +86,7 @@ def main() -> int:
     today_acts = client.get_acts(date=datetime.date.today().isoformat())
     print(f"Acts published on {datetime.date.today().isoformat()}: {len(today_acts)}")
     for act in today_acts:
-        print(f"- {act.title} ({act.date}) {act.institution_label}")
+        print(f"- {act.title} ({act.celex_uri}) {act.institution_label}")
     print("Today documents can be checked at https://eur-lex.europa.eu/oj/direct-access.html")
     
     '''
