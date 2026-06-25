@@ -157,7 +157,7 @@ class TestActsToCsv:
         assert rows[0] == (
             '"act_uri","celex_uri","act_number","title","date","section_code",'
             '"subsection_code","category_code","category_uri","category_label",'
-            '"institution_code","institution_uri","institution_label"'
+            '"institution_code","institution_uri","institution_label","pdf_url"'
         )
         assert rows[1].startswith(
             '"https://eur-lex.europa.eu/eli/act1","https://example.com/act1",'
@@ -248,6 +248,7 @@ class TestActsToDataFrame:
                 "institution_code": None,
                 "institution_uri": None,
                 "institution_label": None,
+                "pdf_url": None,
             }
         ]
 
@@ -320,6 +321,7 @@ class TestActsToXml:
                     "institution_code": None,
                     "institution_uri": None,
                     "institution_label": None,
+                    "pdf_url": None,
                 }
             ],
             "custom_root": "acts",

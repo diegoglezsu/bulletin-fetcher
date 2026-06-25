@@ -114,7 +114,7 @@ class TestGetActs:
                 institution_type=None,
             )
             mock_instance.execute_query.assert_called_once_with("SPARQL_QUERY")
-            mock_parse.assert_called_once_with(mock_response)
+            mock_parse.assert_called_once_with(mock_response, language="ENG")
             assert len(result) == 1
 
     def test_with_custom_language(self, client, mock_connector):
@@ -314,7 +314,7 @@ class TestGetActsOutputFormat:
             institution_type=None,
         )
         mock_instance.execute_query.assert_called_once_with("SPARQL_QUERY")
-        mock_parse.assert_called_once_with(mock_response)
+        mock_parse.assert_called_once_with(mock_response, language="ENG")
 
     def test_objects_format_returns_models(
         self, client, mock_connector, sample_act
@@ -369,6 +369,7 @@ class TestGetActsOutputFormat:
                 "institution_code": None,
                 "institution_uri": None,
                 "institution_label": None,
+                "pdf_url": None,
             }
         ]
         mock_instance.build_acts_query.assert_called_once_with(
@@ -393,7 +394,7 @@ class TestGetActsOutputFormat:
             mock_parse.return_value = [sample_act]
             csv_text = client.get_acts(test_date, output_format="csv")
 
-        assert '"act_uri","celex_uri","act_number","title","date"' in csv_text
+        assert '"act_uri","celex_uri","act_number","title","date","section_code"' in csv_text
         assert (
             '"https://eur-lex.europa.eu/eli/act1",'
             '"https://example.com/act1","2025/1","Act 1","2025-03-27"'
@@ -492,6 +493,7 @@ class TestGetActsOutputFormat:
             '"https://eur-lex.europa.eu/eli/act1",'
             '"https://example.com/act1","2025/1","Act 1","2025-03-27"'
         ) in csv_text
+        assert '"pdf_url"' in csv_text
 
     def test_format_does_not_change_supported_filters(
         self, client, mock_connector, sample_act

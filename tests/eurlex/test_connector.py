@@ -191,17 +191,14 @@ class TestFetchPublicationContent:
 
     def test_success_bytes(self, connector):
         resource_uri = "https://publications.europa.eu/resource/celex/52025M12135"
-        expected_content = b"%PDF-1.7"
+        expected_content = "%PDF-1.7"
 
         with patch("bulletin.eurlex.repository._connector.requests.get") as mock_get:
             mock_response = MagicMock()
-            mock_response.content = expected_content
+            mock_response.text = expected_content
             mock_get.return_value = mock_response
 
-            result = connector.fetch_publication_content(
-                resource_uri,
-                return_bytes=True,
-            )
+            result = connector.fetch_publication_content(resource_uri)
 
         assert result == expected_content
 
@@ -232,13 +229,6 @@ class TestFetchPublicationContent:
     def test_empty_resource_uri(self, connector):
         with pytest.raises(QueryError, match="resource_uri cannot be empty"):
             connector.fetch_publication_content("   ")
-
-    def test_invalid_content_format(self, connector):
-        with pytest.raises(QueryError, match="Unsupported content_format"):
-            connector.fetch_publication_content(
-                "https://publications.europa.eu/resource/celex/52025M12135",
-                content_format="docx",
-            )
 
     def test_http_error(self, connector):
         resource_uri = "https://publications.europa.eu/resource/celex/52025M12135"
