@@ -11,6 +11,7 @@ from ..repository._connector import EurlexConnector
 from ..constants import (
     ACTS_OUTPUT_FORMAT_CSV,
     ACTS_OUTPUT_FORMAT_XML,
+    ACT_CONTENT_FORMAT_HTML,
     ACTS_OUTPUT_FORMAT_JSON,
     ACTS_OUTPUT_FORMAT_OBJECTS,
     ACTS_OUTPUT_FORMAT_PANDASDF,
@@ -109,15 +110,13 @@ class EurlexBulletinClient:
             institution_type=institution_type,
         )
         response = self._connector.execute_query(query)
-        acts = parse_acts_results(response)
+        acts = parse_acts_results(response, language=language)
         return _format_acts(acts, normalized_output_format)
 
     def get_act_content(
         self,
         act_id_or_uri: str,
         language: str = DEFAULT_LANGUAGE,
-        max_size: Optional[int] = None,
-        return_bytes: bool = False,
     ) -> Union[str, bytes]:
         """Fetch the publication content stream for an act.
 
@@ -128,19 +127,15 @@ class EurlexBulletinClient:
             act_id_or_uri: CELEX id or full resource CELLEX URI. This is not the
                 Official Journal act number.
             language: ISO 639-3 language code (default: "ENG").
-            max_size: Optional maximum content-stream size in bytes.
-            return_bytes: Return raw response bytes instead of decoded text.
 
         Returns:
-            The publication content decoded as html text, or bytes when return_bytes
-            is True.
+            The publication content decoded as html text, or bytes when
+            return_bytes is True or content_format is "pdf".
         """
         resource_uri = self._connector.build_act_content_url(act_id_or_uri)
         return self._connector.fetch_publication_content(
             resource_uri,
             language=language,
-            max_size=max_size,
-            return_bytes=return_bytes,
         )
 
     def get_category_types(
@@ -155,7 +150,9 @@ class EurlexBulletinClient:
         Returns:
             A list of CategoryType objects with 'code' and 'label' attributes.
         """
-        query = self._connector.build_category_types_query(language=language, search=search)
+        query = self._connector.build_category_types_query(
+            language=language, search=search
+        )
         response = self._connector.execute_query(query)
         return parse_category_types_results(response)
 
@@ -171,6 +168,8 @@ class EurlexBulletinClient:
         Returns:
             A list of InstitutionType objects with 'code' and 'label' attributes.
         """
-        query = self._connector.build_institution_types_query(language=language, search=search)
+        query = self._connector.build_institution_types_query(
+            language=language, search=search
+        )
         response = self._connector.execute_query(query)
         return parse_institution_types_results(response)

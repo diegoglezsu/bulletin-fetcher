@@ -3,6 +3,9 @@
 #: Base domain for EU publications resources.
 CELLAR_DOMAIN = "publications.europa.eu"
 
+#: EUR-Lex domain for legal content.
+EURLEX_DOMAIN = "eur-lex.europa.eu"
+
 #: EUR-Lex / Cellar SPARQL endpoint used for queries.
 SPARQL_ENDPOINT = f"https://{CELLAR_DOMAIN}/webapi/rdf/sparql"
 
@@ -55,5 +58,15 @@ SUPPORTED_ACTS_OUTPUT_FORMATS = frozenset(
         ACTS_OUTPUT_FORMAT_CSV,
         ACTS_OUTPUT_FORMAT_XML,
         ACTS_OUTPUT_FORMAT_PANDASDF,
+    }
+)
+
+#: Available act content formats retrieved through Cellar content negotiation.
+ACT_CONTENT_FORMAT_HTML = "html"
+ACT_CONTENT_FORMAT_PDF = "pdf"
+SUPPORTED_ACT_CONTENT_FORMATS = frozenset(
+    {
+        ACT_CONTENT_FORMAT_HTML,
+        ACT_CONTENT_FORMAT_PDF,
     }
 )

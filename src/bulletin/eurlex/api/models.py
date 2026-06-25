@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
-from typing import Any
+from typing import Any, Optional
+
+from ..constants import EURLEX_DOMAIN, LANGUAGE_CODE_MAP
 
 
 def _required_value(binding: Mapping[str, Any], key: str) -> str:
@@ -28,6 +31,28 @@ def _optional_value(binding: Mapping[str, Any], key: str) -> str | None:
     return value if isinstance(value, str) else None
 
 
+_ELI_PDF_RE = re.compile(
+    rf"https://{re.escape(EURLEX_DOMAIN)}/eli/([^/]+)/(\d{{4}})/(\d+)(?:/oj)?$"
+)
+
+
+def _build_pdf_url(act_uri: str, language: str) -> str | None:
+    """Build the EUR-Lex legal-content PDF URL from an ELI URI and language."""
+    match = _ELI_PDF_RE.match(act_uri)
+    if not match:
+        return None
+    section = match.group(1)
+    year = match.group(2)
+    number = match.group(3).zfill(5)
+    lang_code = LANGUAGE_CODE_MAP.get(language)
+    if lang_code is None:
+        return None
+    return (
+        f"https://{EURLEX_DOMAIN}/legal-content/{lang_code.upper()}"
+        f"/TXT/PDF/?uri=OJ:{section}_{year}{number}"
+    )
+
+
 @dataclass
 class EurlexOfficialAct:
     act_uri: str
@@ -43,6 +68,7 @@ class EurlexOfficialAct:
     institution_code: str | None
     institution_uri: str | None
     institution_label: str | None
+    pdf_url: Optional[str] = None
 
     def _to_dict(self) -> dict[str, str | None]:
         """Return a serializable dict representation of the act."""
@@ -60,13 +86,20 @@ class EurlexOfficialAct:
             "institution_code": self.institution_code,
             "institution_uri": self.institution_uri,
             "institution_label": self.institution_label,
+            "pdf_url": self.pdf_url,
         }
 
     @classmethod
-    def _from_binding(cls, binding: Mapping[str, Any]) -> EurlexOfficialAct:
+    def _from_binding(
+        cls,
+        binding: Mapping[str, Any],
+        language: Optional[str] = None,
+    ) -> EurlexOfficialAct:
         """Build an EurlexOfficialAct from one SPARQL binding item."""
+        act_uri = _required_value(binding, "act")
+        pdf_url = _build_pdf_url(act_uri, language) if language else None
         return cls(
-            act_uri=_required_value(binding, "act"),
+            act_uri=act_uri,
             celex_uri=_optional_value(binding, "celexAct") or _optional_value(binding, "celex") or "",
             act_number=_optional_value(binding, "actNumber"),
             title=_required_value(binding, "title"),
@@ -79,6 +112,7 @@ class EurlexOfficialAct:
             institution_code=_optional_value(binding, "institutionCode"),
             institution_uri=_optional_value(binding, "institutionUri"),
             institution_label=_optional_value(binding, "institutionLabel"),
+            pdf_url=pdf_url,
         )
 
 
