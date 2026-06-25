@@ -312,17 +312,12 @@ class EurlexConnector:
         self,
         resource_uri: str,
         language: str = DEFAULT_LANGUAGE,
-        return_bytes: bool = False,
-        content_format: str = ACT_CONTENT_FORMAT_HTML,
     ) -> Union[str, bytes]:
         """Fetch publication content from EU API.
 
         Args:
             resource_uri: Full Cellar resource URI.
             language: ISO 639-3 language code used by Cellar (e.g. "ENG").
-            return_bytes: Return raw response bytes instead of decoded text.
-            content_format: Publication format to request from Cellar. Supported
-                values are "html" and "pdf". PDFs are always returned as bytes.
 
         Returns:
             The response body decoded as text, or raw bytes when return_bytes is True
@@ -335,8 +330,6 @@ class EurlexConnector:
         if not resource_uri.strip():
             raise QueryError("resource_uri cannot be empty.")
 
-        content_format = _normalize_content_format(content_format)
-
         language = language.strip().upper()
         if LANGUAGE_CODE_MAP.get(language) is None:
             raise QueryError(
@@ -345,7 +338,7 @@ class EurlexConnector:
             )
 
         headers = {
-            "Accept": _CONTENT_ACCEPT_HEADERS[content_format],
+            "Accept": _CONTENT_ACCEPT_HEADERS[ACT_CONTENT_FORMAT_HTML],
             "Accept-Language": language.lower(),
         }
 
@@ -357,9 +350,6 @@ class EurlexConnector:
                 allow_redirects=True,
             )
             response.raise_for_status()
-            # TODO: review content negotiation
-            if return_bytes or content_format == ACT_CONTENT_FORMAT_PDF:
-                return response.content
             return response.text
         except requests.exceptions.HTTPError as e:
             raise EndpointError(
@@ -456,18 +446,3 @@ def _parse_date(value: str) -> date:
 
 def _escape_sparql_literal(value: str) -> str:
     return value.replace("\\", "\\\\").replace('"', '\\"')
-
-
-def _normalize_content_format(content_format: str) -> str:
-    if not isinstance(content_format, str):
-        raise QueryError("content_format must be a string.")
-
-    normalized = content_format.strip().lower()
-    if normalized in SUPPORTED_ACT_CONTENT_FORMATS:
-        return normalized
-
-    supported = ", ".join(sorted(SUPPORTED_ACT_CONTENT_FORMATS))
-    raise QueryError(
-        f"Unsupported content_format: {content_format!r}. "
-        f"Supported formats are: {supported}."
-    )
