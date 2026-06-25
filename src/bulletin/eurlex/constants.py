@@ -3,6 +3,9 @@
 #: Base domain for EU publications resources.
 CELLAR_DOMAIN = "publications.europa.eu"
 
+#: EUR-Lex domain for legal content.
+EURLEX_DOMAIN = "eur-lex.europa.eu"
+
 #: EUR-Lex / Cellar SPARQL endpoint used for queries.
 SPARQL_ENDPOINT = f"https://{CELLAR_DOMAIN}/webapi/rdf/sparql"
 

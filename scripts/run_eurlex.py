@@ -39,6 +39,7 @@ def main() -> int:
         print(f"CELEX URI: {act.celex_uri}")
         print(f"Title: {act.title}")
         print(f"Date: {act.date}")
+        print("PDF URL:", act.pdf_url if act.pdf_url else "N/A")
         if act.category_label:
             print(f"Category: {act.category_label}")
         if act.institution_label:
@@ -56,13 +57,9 @@ def main() -> int:
 
         try:
             content = client.get_act_content(
-                "52025M12135",
+                first_act.celex_uri,
                 language=language,
-                content_format="pdf",
             )
-            # Save the pdf content to a file
-            with open("./scripts/act_content.pdf", "wb") as f:
-                f.write(content)
         except Exception as exc:
             print(f"Error while fetching act content: {exc}", file=sys.stderr)
         else:

@@ -2,7 +2,7 @@ from collections.abc import Mapping
 import csv
 import importlib
 import io
-from typing import Any
+from typing import Any, Optional
 
 from .api.models import EurlexOfficialAct, CategoryType, InstitutionType
 
@@ -12,8 +12,17 @@ MISSING_RESULTS_BINDINGS_ERROR = "missing 'results.bindings' key."
 BINDINGS_MUST_BE_LIST_ERROR = "'results.bindings' must be a list."
 
 
-def parse_acts_results(results: Mapping[str, Any]) -> list[EurlexOfficialAct]:
-    """Parse SPARQL results into a list of EurlexOfficialAct objects."""
+def parse_acts_results(
+    results: Mapping[str, Any],
+    language: Optional[str] = None,
+) -> list[EurlexOfficialAct]:
+    """Parse SPARQL results into a list of EurlexOfficialAct objects.
+
+    Args:
+        results: The SPARQL JSON response.
+        language: ISO 639-3 language code (e.g. "SPA"). When provided,
+            each act's ``pdf_url`` will be computed.
+    """
     try:
         bindings = results["results"]["bindings"]
     except KeyError as exc:
@@ -34,7 +43,7 @@ def parse_acts_results(results: Mapping[str, Any]) -> list[EurlexOfficialAct]:
                     "each Act binding must be a mapping"
                 )
             )
-        acts.append(EurlexOfficialAct._from_binding(binding))
+        acts.append(EurlexOfficialAct._from_binding(binding, language=language))
 
     return acts
 
@@ -55,6 +64,7 @@ def acts_to_csv(acts: list[EurlexOfficialAct]) -> str:
         "institution_code",
         "institution_uri",
         "institution_label",
+        "pdf_url",
     ]
     buffer = io.StringIO(newline="")
     writer = csv.DictWriter(buffer, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)

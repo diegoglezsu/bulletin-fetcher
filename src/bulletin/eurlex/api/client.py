@@ -110,15 +110,13 @@ class EurlexBulletinClient:
             institution_type=institution_type,
         )
         response = self._connector.execute_query(query)
-        acts = parse_acts_results(response)
+        acts = parse_acts_results(response, language=language)
         return _format_acts(acts, normalized_output_format)
 
     def get_act_content(
         self,
         act_id_or_uri: str,
         language: str = DEFAULT_LANGUAGE,
-        return_bytes: bool = False,
-        content_format: str = ACT_CONTENT_FORMAT_HTML,
     ) -> Union[str, bytes]:
         """Fetch the publication content stream for an act.
 
@@ -129,9 +127,6 @@ class EurlexBulletinClient:
             act_id_or_uri: CELEX id or full resource CELLEX URI. This is not the
                 Official Journal act number.
             language: ISO 639-3 language code (default: "ENG").
-            return_bytes: Return raw response bytes instead of decoded text.
-            content_format: Publication format to request from Cellar. Use "html"
-                for the default text response or "pdf" for PDF bytes.
 
         Returns:
             The publication content decoded as html text, or bytes when
@@ -141,8 +136,6 @@ class EurlexBulletinClient:
         return self._connector.fetch_publication_content(
             resource_uri,
             language=language,
-            return_bytes=return_bytes,
-            content_format=content_format,
         )
 
     def get_category_types(
