@@ -67,6 +67,50 @@ class TestBuildPdfUrl:
         )
         assert url is None
 
+    def test_celex_uri_used_when_provided(self) -> None:
+        url = _build_pdf_url(
+            "https://eur-lex.europa.eu/eli/reg_del/2017/67/oj",
+            "SPA",
+            celex_uri="http://publications.europa.eu/resource/celex/32017R0067",
+        )
+        assert url == (
+            "https://eur-lex.europa.eu/legal-content/ES"
+            "/TXT/PDF/?uri=CELEX:32017R0067"
+        )
+
+    def test_celex_uri_without_prefix(self) -> None:
+        url = _build_pdf_url(
+            "https://eur-lex.europa.eu/eli/C/2025/6050",
+            "ENG",
+            celex_uri="32025C06050",
+        )
+        assert url == (
+            "https://eur-lex.europa.eu/legal-content/EN"
+            "/TXT/PDF/?uri=CELEX:32025C06050"
+        )
+
+    def test_celex_uri_empty_falls_back_to_oj(self) -> None:
+        url = _build_pdf_url(
+            "https://eur-lex.europa.eu/eli/C/2025/6050",
+            "ENG",
+            celex_uri="",
+        )
+        assert url == (
+            "https://eur-lex.europa.eu/legal-content/EN"
+            "/TXT/PDF/?uri=OJ:C_202506050"
+        )
+
+    def test_celex_uri_none_falls_back_to_oj(self) -> None:
+        url = _build_pdf_url(
+            "https://eur-lex.europa.eu/eli/C/2025/6050",
+            "ENG",
+            celex_uri=None,
+        )
+        assert url == (
+            "https://eur-lex.europa.eu/legal-content/EN"
+            "/TXT/PDF/?uri=OJ:C_202506050"
+        )
+
 
 class TestCategoryTypeToDict:
     """Tests for CategoryType._to_dict."""

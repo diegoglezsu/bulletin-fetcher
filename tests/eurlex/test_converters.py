@@ -143,6 +143,34 @@ class TestParseActsResults:
             "/TXT/PDF/?uri=OJ:C_202506050"
         )
 
+    def test_with_language_and_celex_sets_pdf_url(self) -> None:
+        """Test that celexAct in binding produces CELEX-based pdf_url."""
+        response = {
+            "results": {
+                "bindings": [
+                    {
+                        "act": {
+                            "value": "https://eur-lex.europa.eu/eli/reg_del/2017/67/oj"
+                        },
+                        "celexAct": {
+                            "value": "http://publications.europa.eu/resource/celex/32017R0067"
+                        },
+                        "title": {"value": "Test Deleted Regulation"},
+                        "date": {"value": "2017-01-17"},
+                    }
+                ]
+            }
+        }
+
+        acts = parse_acts_results(response, language="SPA")
+        assert acts[0].pdf_url == (
+            "https://eur-lex.europa.eu/legal-content/ES"
+            "/TXT/PDF/?uri=CELEX:32017R0067"
+        )
+        assert acts[0].celex_uri == (
+            "http://publications.europa.eu/resource/celex/32017R0067"
+        )
+
     def test_raises_for_invalid_binding_entry(self) -> None:
         """Test that parsing raises error when binding is not a mapping."""
         response = {"results": {"bindings": ["not-a-mapping"]}}

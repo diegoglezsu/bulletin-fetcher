@@ -36,17 +36,38 @@ _ELI_PDF_RE = re.compile(
 )
 
 
-def _build_pdf_url(act_uri: str, language: str) -> str | None:
-    """Build the EUR-Lex legal-content PDF URL from an ELI URI and language."""
+def _build_pdf_url(
+    act_uri: str,
+    language: str,
+    celex_uri: str | None = None,
+) -> str | None:
+    """Build the EUR-Lex legal-content PDF URL from an ELI URI and language.
+
+    Prefers a CELEX-based URL when a celex_uri is provided; falls back to
+    the OJ-format URL derived from the ELI URI.
+    """
+    lang_code = LANGUAGE_CODE_MAP.get(language)
+    if lang_code is None:
+        return None
+
+    if celex_uri:
+        celex_id = (
+            celex_uri.rsplit("/celex/", 1)[-1]
+            if "/celex/" in celex_uri
+            else celex_uri
+        )
+        if celex_id:
+            return (
+                f"https://{EURLEX_DOMAIN}/legal-content/{lang_code.upper()}"
+                f"/TXT/PDF/?uri=CELEX:{celex_id}"
+            )
+
     match = _ELI_PDF_RE.match(act_uri)
     if not match:
         return None
     section = match.group(1)
     year = match.group(2)
     number = match.group(3).zfill(5)
-    lang_code = LANGUAGE_CODE_MAP.get(language)
-    if lang_code is None:
-        return None
     return (
         f"https://{EURLEX_DOMAIN}/legal-content/{lang_code.upper()}"
         f"/TXT/PDF/?uri=OJ:{section}_{year}{number}"
@@ -97,10 +118,15 @@ class EurlexOfficialAct:
     ) -> EurlexOfficialAct:
         """Build an EurlexOfficialAct from one SPARQL binding item."""
         act_uri = _required_value(binding, "act")
-        pdf_url = _build_pdf_url(act_uri, language) if language else None
+        celex_uri = (
+            _optional_value(binding, "celexAct")
+            or _optional_value(binding, "celex")
+            or ""
+        )
+        pdf_url = _build_pdf_url(act_uri, language, celex_uri) if language else None
         return cls(
             act_uri=act_uri,
-            celex_uri=_optional_value(binding, "celexAct") or _optional_value(binding, "celex") or "",
+            celex_uri=celex_uri,
             act_number=_optional_value(binding, "actNumber"),
             title=_required_value(binding, "title"),
             date=date.fromisoformat(_required_value(binding, "date").split("T")[0]),

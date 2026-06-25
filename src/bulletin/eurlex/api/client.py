@@ -11,7 +11,6 @@ from ..repository._connector import EurlexConnector
 from ..constants import (
     ACTS_OUTPUT_FORMAT_CSV,
     ACTS_OUTPUT_FORMAT_XML,
-    ACT_CONTENT_FORMAT_HTML,
     ACTS_OUTPUT_FORMAT_JSON,
     ACTS_OUTPUT_FORMAT_OBJECTS,
     ACTS_OUTPUT_FORMAT_PANDASDF,
