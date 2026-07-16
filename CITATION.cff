@@ -44,5 +44,5 @@ identifiers:
 license: MIT
 repository-code: "https://github.com/diegoglezsu/bulletin-fetcher"
 url: "https://diegoglezsu.github.io/bulletin-fetcher/"
-version: "0.5.8"
-date-released: "2026-06-25"
+version: "0.5.9"
+date-released: "2026-07-16"
