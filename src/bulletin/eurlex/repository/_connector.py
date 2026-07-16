@@ -96,8 +96,18 @@ class EurlexConnector:
         language_uri = f"http://{CELLAR_DOMAIN}/resource/authority/language/{language}"
 
         date_filters: list[str] = self._get_date_filters(date, date_end)
-        filters: list[str] = self._get_act_filters(
-            title_contains, category_type, institution_type
+        title_filter = self._get_title_filter(title_contains)
+        category_block = self._get_resource_subquery_block(
+            predicate="cdm:work_has_resource-type",
+            candidate_var="categoryCandidate",
+            output_var="categoryUriStr",
+            code=category_type,
+        )
+        institution_block = self._get_resource_subquery_block(
+            predicate="cdm:work_created_by_agent",
+            candidate_var="institutionCandidate",
+            output_var="institutionUriStr",
+            code=institution_type,
         )
 
         query_template = """
@@ -106,20 +116,20 @@ class EurlexConnector:
             PREFIX owl: <http://www.w3.org/2002/07/owl#>
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
-            SELECT
+            SELECT DISTINCT
             ?act
-            (SAMPLE(?celexUri) AS ?celexAct)
-            (SAMPLE(?number) AS ?actNumber)
-            (SAMPLE(?titleValue) AS ?title)
+            ?celexAct
+            ?actNumber
+            ?title
             ?date
-            (SAMPLE(?section) AS ?sectionCode)
-            (SAMPLE(?subsection) AS ?subsectionCode)
-            (SAMPLE(REPLACE(STR(?category), ".*/", "")) AS ?categoryCode)
-            (SAMPLE(?category) AS ?categoryUri)
-            (SAMPLE(?categoryLabelValue) AS ?categoryLabel)
-            (SAMPLE(REPLACE(STR(?institution), ".*/", "")) AS ?institutionCode)
-            (SAMPLE(?institution) AS ?institutionUri)
-            (SAMPLE(?institutionLabelValue) AS ?institutionLabel)
+            ?sectionCode
+            ?subsectionCode
+            ?categoryCode
+            ?categoryUri
+            ?categoryLabel
+            ?institutionCode
+            ?institutionUri
+            ?institutionLabel
             WHERE {{
             ?c_act (
                 cdm:official-journal-act_date_publication
@@ -128,61 +138,115 @@ class EurlexConnector:
             {date_filters_str}
 
             OPTIONAL {{
-                ?c_act owl:sameAs ?eliUri .
-                FILTER(CONTAINS(STR(?eliUri), "/resource/eli/"))
+                SELECT ?c_act (MIN(STR(?eliCandidate)) AS ?eliUriStr)
+                WHERE {{
+                    ?c_act owl:sameAs ?eliCandidate .
+                    FILTER(CONTAINS(STR(?eliCandidate), "/resource/eli/"))
+                }}
+                GROUP BY ?c_act
             }}
 
             OPTIONAL {{
-                ?c_act owl:sameAs ?celexUri .
-                FILTER(CONTAINS(STR(?celexUri), "/resource/celex/"))
+                SELECT ?c_act (MIN(STR(?celexCandidate)) AS ?celexUriStr)
+                WHERE {{
+                    ?c_act owl:sameAs ?celexCandidate .
+                    FILTER(CONTAINS(STR(?celexCandidate), "/resource/celex/"))
+                }}
+                GROUP BY ?c_act
             }}
 
             OPTIONAL {{
-                ?c_act owl:sameAs ?ojUri .
-                FILTER(CONTAINS(STR(?ojUri), "/resource/oj/"))
+                SELECT ?c_act (MIN(STR(?ojCandidate)) AS ?ojUriStr)
+                WHERE {{
+                    ?c_act owl:sameAs ?ojCandidate .
+                    FILTER(CONTAINS(STR(?ojCandidate), "/resource/oj/"))
+                }}
+                GROUP BY ?c_act
             }}
 
-            BIND(COALESCE(?eliUri, ?celexUri, ?ojUri) AS ?rawAct)
-            FILTER(BOUND(?rawAct))
+            BIND(COALESCE(?eliUriStr, ?celexUriStr, ?ojUriStr) AS ?rawActStr)
+            FILTER(BOUND(?rawActStr))
             BIND(
                 IF(
-                    CONTAINS(STR(?rawAct), "/resource/eli/"),
-                    IRI(REPLACE(STR(?rawAct), "http://publications.europa.eu/resource/eli/", "https://eur-lex.europa.eu/eli/")),
-                    ?rawAct
+                    CONTAINS(?rawActStr, "/resource/eli/"),
+                    IRI(REPLACE(?rawActStr, "http://publications.europa.eu/resource/eli/", "https://eur-lex.europa.eu/eli/")),
+                    IRI(?rawActStr)
                 )
                 AS ?act
             )
+            BIND(IRI(?celexUriStr) AS ?celexAct)
 
-            ?expr cdm:expression_belongs_to_work ?c_act ;
-                    cdm:expression_uses_language <{language_uri}> ;
-                    cdm:expression_title ?titleValue .
-
-            OPTIONAL {{ ?c_act cdm:official-journal-act_section_oj ?section . }}
-            OPTIONAL {{ ?c_act cdm:official-journal-act_subsection_oj ?subsection . }}
-
-            OPTIONAL {{
-                ?c_act cdm:work_has_resource-type ?category .
-                OPTIONAL {{
-                    ?category skos:prefLabel ?categoryLabelValue .
-                    FILTER(LANG(?categoryLabelValue) = "{lang_code}")
+            {{
+                SELECT ?c_act (MIN(STR(?titleCandidate)) AS ?title)
+                WHERE {{
+                    ?expr cdm:expression_belongs_to_work ?c_act ;
+                        cdm:expression_uses_language <{language_uri}> ;
+                        cdm:expression_title ?titleCandidate .
+                    {title_filter}
                 }}
+                GROUP BY ?c_act
             }}
 
             OPTIONAL {{
-                ?c_act cdm:work_created_by_agent ?institution .
-                OPTIONAL {{
-                    ?institution skos:prefLabel ?institutionLabelValue .
-                    FILTER(LANG(?institutionLabelValue) = "{lang_code}")
+                SELECT ?c_act (MIN(STR(?sectionCandidate)) AS ?sectionCode)
+                WHERE {{
+                    ?c_act cdm:official-journal-act_section_oj ?sectionCandidate .
                 }}
+                GROUP BY ?c_act
             }}
 
-            {filters_str}
-
-            OPTIONAL {{ ?c_act cdm:official-journal-act_number ?officialJournalActNumber . }}
-            OPTIONAL {{ ?c_act cdm:resource_legal_number_natural ?resourceLegalNumber . }}
-            BIND(COALESCE(STR(?officialJournalActNumber), STR(?resourceLegalNumber)) AS ?number)
+            OPTIONAL {{
+                SELECT ?c_act (MIN(STR(?subsectionCandidate)) AS ?subsectionCode)
+                WHERE {{
+                    ?c_act cdm:official-journal-act_subsection_oj ?subsectionCandidate .
+                }}
+                GROUP BY ?c_act
             }}
-            GROUP BY ?act ?date
+
+            {category_block}
+            BIND(IRI(?categoryUriStr) AS ?categoryUri)
+            BIND(REPLACE(?categoryUriStr, ".*/", "") AS ?categoryCode)
+
+            OPTIONAL {{
+                SELECT ?categoryUri (MIN(STR(?categoryLabelCandidate)) AS ?categoryLabel)
+                WHERE {{
+                    ?categoryUri skos:prefLabel ?categoryLabelCandidate .
+                    FILTER(LANG(?categoryLabelCandidate) = "{lang_code}")
+                }}
+                GROUP BY ?categoryUri
+            }}
+
+            {institution_block}
+            BIND(IRI(?institutionUriStr) AS ?institutionUri)
+            BIND(REPLACE(?institutionUriStr, ".*/", "") AS ?institutionCode)
+
+            OPTIONAL {{
+                SELECT ?institutionUri (MIN(STR(?institutionLabelCandidate)) AS ?institutionLabel)
+                WHERE {{
+                    ?institutionUri skos:prefLabel ?institutionLabelCandidate .
+                    FILTER(LANG(?institutionLabelCandidate) = "{lang_code}")
+                }}
+                GROUP BY ?institutionUri
+            }}
+
+            OPTIONAL {{
+                SELECT ?c_act (MIN(STR(?officialJournalActNumberCandidate)) AS ?officialJournalActNumber)
+                WHERE {{
+                    ?c_act cdm:official-journal-act_number ?officialJournalActNumberCandidate .
+                }}
+                GROUP BY ?c_act
+            }}
+
+            OPTIONAL {{
+                SELECT ?c_act (MIN(STR(?resourceLegalNumberCandidate)) AS ?resourceLegalNumber)
+                WHERE {{
+                    ?c_act cdm:resource_legal_number_natural ?resourceLegalNumberCandidate .
+                }}
+                GROUP BY ?c_act
+            }}
+            BIND(COALESCE(?officialJournalActNumber, ?resourceLegalNumber) AS ?actNumber)
+
+            }}
             ORDER BY ?date ?act
         """
 
@@ -191,7 +255,9 @@ class EurlexConnector:
             lang_code=lang_code,
             cellar_domain=CELLAR_DOMAIN,
             date_filters_str="\n  ".join(date_filters),
-            filters_str="\n  ".join(filters),
+            title_filter=title_filter,
+            category_block=category_block,
+            institution_block=institution_block,
         )
 
     def _get_label_filter(self, var_name: str, search: Optional[str]) -> str:
@@ -405,34 +471,47 @@ class EurlexConnector:
             filters.append(f'FILTER(?date = "{date}"^^xsd:date)')
         return filters
 
-    def _get_act_filters(
-        self,
-        title_contains: Optional[str] = None,
-        category_type: Optional[str] = None,
-        institution_type: Optional[str] = None,
-    ) -> list[str]:
-        filters: list[str] = []
+    def _get_title_filter(self, title_contains: Optional[str] = None) -> str:
         if title_contains is not None:
             escaped_title = _escape_sparql_literal(title_contains)
-            filters.append(
-                f'FILTER(CONTAINS(LCASE(STR(?titleValue)), LCASE("{escaped_title}")))'
+            return (
+                f"FILTER(CONTAINS(LCASE(STR(?titleCandidate)), "
+                f'LCASE("{escaped_title}")))'
+            )
+        return ""
+
+    def _get_resource_subquery_block(
+        self,
+        predicate: str,
+        candidate_var: str,
+        output_var: str,
+        code: Optional[str],
+    ) -> str:
+        wrapper = "OPTIONAL " if code is None else ""
+        filter_line = ""
+        if code is not None:
+            escaped_code = _escape_sparql_literal(code)
+            filter_line = (
+                f'\n                    FILTER(REPLACE(STR(?{candidate_var}), ".*/", "") = '
+                f'"{escaped_code}")'
             )
 
-        if category_type is not None:
-            filters.append(
-                f'FILTER(REPLACE(STR(?category), ".*/", "") = "{category_type}")'
-            )
-
-        if institution_type is not None:
-            filters.append(
-                f'FILTER(REPLACE(STR(?institution), ".*/", "") = "{institution_type}")'
-            )
-        return filters
+        return (
+            f"{wrapper}{{\n"
+            f"                SELECT ?c_act (MIN(STR(?{candidate_var})) AS ?{output_var})\n"
+            f"                WHERE {{\n"
+            f"                    ?c_act {predicate} ?{candidate_var} ."
+            f"{filter_line}\n"
+            f"                }}\n"
+            f"                GROUP BY ?c_act\n"
+            f"            }}"
+        )
 
 
 def _validate_date(value: str) -> None:
     if not value or len(value) != 10 or value[4] != "-" or value[7] != "-":
         raise QueryError(f"Invalid date format: '{value}'. Expected YYYY-MM-DD.")
+    _parse_date(value)
 
 
 def _parse_date(value: str) -> date:

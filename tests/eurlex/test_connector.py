@@ -21,15 +21,17 @@ class TestBuildActsQuery:
             "expression_uses_language <http://publications.europa.eu/resource/authority/language/ENG>"
             in query
         )
-        assert 'FILTER(LANG(?categoryLabelValue) = "en")' in query
+        assert 'FILTER(LANG(?categoryLabelCandidate) = "en")' in query
 
     def test_uses_eli_act_uri_and_optional_celex_uri(self, connector):
         query = connector.build_acts_query("2024-01-01")
-        assert 'CONTAINS(STR(?eliUri), "/resource/eli/")' in query
-        assert 'CONTAINS(STR(?celexUri), "/resource/celex/")' in query
-        assert 'CONTAINS(STR(?ojUri), "/resource/oj/")' in query
-        assert "BIND(COALESCE(?eliUri, ?celexUri, ?ojUri) AS ?rawAct)" in query
-        assert "SAMPLE(?celexUri) AS ?celexAct" in query
+        assert 'CONTAINS(STR(?eliCandidate), "/resource/eli/")' in query
+        assert 'CONTAINS(STR(?celexCandidate), "/resource/celex/")' in query
+        assert 'CONTAINS(STR(?ojCandidate), "/resource/oj/")' in query
+        assert (
+            "BIND(COALESCE(?eliUriStr, ?celexUriStr, ?ojUriStr) AS ?rawActStr)" in query
+        )
+        assert "BIND(IRI(?celexUriStr) AS ?celexAct)" in query
 
     def test_does_not_require_eli_uri(self, connector):
         query = connector.build_acts_query("2024-01-01")
@@ -37,8 +39,16 @@ class TestBuildActsQuery:
             'FILTER(STRSTARTS(STR(?rawAct), "http://publications.europa.eu/resource/eli/"))'
             not in query
         )
-        assert "FILTER(BOUND(?rawAct))" in query
-        assert "GROUP BY ?act ?date" in query
+        assert "FILTER(BOUND(?rawActStr))" in query
+        assert "GROUP BY ?act ?date" not in query
+
+    def test_uses_deterministic_aggregates_instead_of_sample(self, connector):
+        query = connector.build_acts_query("2024-01-01")
+        assert "SAMPLE(" not in query
+        assert "SELECT DISTINCT" in query
+        assert "MIN(STR(?titleCandidate)) AS ?title" in query
+        assert "MIN(STR(?categoryCandidate)) AS ?categoryUriStr" in query
+        assert "MIN(STR(?institutionCandidate)) AS ?institutionUriStr" in query
 
     def test_includes_legacy_official_journal_date_path(self, connector):
         query = connector.build_acts_query("2017-01-04")
@@ -54,13 +64,15 @@ class TestBuildActsQuery:
             "expression_uses_language <http://publications.europa.eu/resource/authority/language/ENG>"
             in query
         )
-        assert 'FILTER(LANG(?categoryLabelValue) = "en")' in query
+        assert 'FILTER(LANG(?categoryLabelCandidate) = "en")' in query
 
     def test_invalid_date(self, connector):
         with pytest.raises(QueryError, match="Invalid date format"):
             connector.build_acts_query("20240101")
         with pytest.raises(QueryError, match="Invalid date format"):
             connector.build_acts_query("01-01-2024")
+        with pytest.raises(QueryError, match="Invalid date format"):
+            connector.build_acts_query("2024-99-99")
 
     def test_unsupported_language(self, connector):
         with pytest.raises(QueryError, match="Unsupported language: 'XYZ'"):
@@ -75,11 +87,15 @@ class TestBuildActsQuery:
         query = connector.build_acts_query(
             date="2024-01-01", title_contains="regulation"
         )
-        assert 'CONTAINS(LCASE(STR(?titleValue)), LCASE("regulation"))' in query
+        assert 'CONTAINS(LCASE(STR(?titleCandidate)), LCASE("regulation"))' in query
 
     def test_category_type(self, connector):
         query = connector.build_acts_query(date="2024-01-01", category_type="RES")
-        assert 'FILTER(REPLACE(STR(?category), ".*/", "") = "RES")' in query
+        assert 'FILTER(REPLACE(STR(?categoryCandidate), ".*/", "") = "RES")' in query
+        assert (
+            "OPTIONAL {\n                SELECT ?c_act (MIN(STR(?categoryCandidate))"
+            not in query
+        )
 
     def test_invalid_category_type(self, connector):
         with pytest.raises(QueryError, match="category_type filter cannot be empty"):
@@ -99,11 +115,26 @@ class TestBuildActsQuery:
 
     def test_institution_type(self, connector):
         query = connector.build_acts_query(date="2024-01-01", institution_type="COM")
-        assert 'FILTER(REPLACE(STR(?institution), ".*/", "") = "COM")' in query
+        assert 'FILTER(REPLACE(STR(?institutionCandidate), ".*/", "") = "COM")' in query
+        assert (
+            "OPTIONAL {\n                SELECT ?c_act (MIN(STR(?institutionCandidate))"
+            not in query
+        )
 
     def test_invalid_institution_type(self, connector):
         with pytest.raises(QueryError, match="institution_type filter cannot be empty"):
             connector.build_acts_query(date="2024-01-01", institution_type="  ")
+
+    def test_category_and_institution_are_optional_without_filters(self, connector):
+        query = connector.build_acts_query(date="2024-01-01")
+        assert (
+            "OPTIONAL {\n                SELECT ?c_act (MIN(STR(?categoryCandidate))"
+            in query
+        )
+        assert (
+            "OPTIONAL {\n                SELECT ?c_act (MIN(STR(?institutionCandidate))"
+            in query
+        )
 
 
 class TestBuildCategoryTypesQuery:
@@ -203,7 +234,6 @@ class TestFetchPublicationContent:
     def test_success_text(self, connector):
         # TODO: implement after feature
         pass
-
 
     def test_success_bytes(self, connector):
         resource_uri = "https://publications.europa.eu/resource/celex/52025M12135"
