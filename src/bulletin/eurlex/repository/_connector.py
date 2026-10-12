@@ -5,8 +5,9 @@ Handles query building and HTTP communication.
 
 from __future__ import annotations
 
-from datetime import date
-from typing import Optional, Union
+from calendar import monthrange
+from datetime import date, timedelta
+from typing import Iterator, List, Optional, Tuple, Union
 from urllib.parse import quote
 
 import requests  # type: ignore
@@ -18,7 +19,6 @@ from ..constants import (
     CELLAR_DOMAIN,
     ACT_CONTENT_FORMAT_HTML,
     ACT_CONTENT_FORMAT_PDF,
-    SUPPORTED_ACT_CONTENT_FORMATS,
 )
 from ..exceptions import EndpointError, QueryError
 
@@ -39,6 +39,46 @@ class EurlexConnector:
         self.timeout = timeout
 
     def build_acts_query(
+        self,
+        date: str,
+        language: str = DEFAULT_LANGUAGE,
+        date_end: Optional[str] = None,
+        title_contains: Optional[str] = None,
+        category_type: Optional[str] = None,
+        institution_type: Optional[str] = None,
+    ) -> Union[str, List[str]]:
+        """Build one query, or monthly queries for ranges over three months.
+
+        Pass the result to execute_query to receive one combined response.
+        """
+        filters = dict(
+            language=language,
+            title_contains=title_contains,
+            category_type=category_type,
+            institution_type=institution_type,
+        )
+        # Validate all inputs before deciding whether to batch requests.
+        query = self._build_acts_query(date, date_end=date_end, **filters)
+        if date_end is None:
+            return query
+        start, end = _parse_date(date), _parse_date(date_end)
+        month_index = start.year * 12 + start.month - 1 + 3
+        year, month = divmod(month_index, 12)
+        if year > 9999:
+            return query
+        threshold = start.replace(
+            year=year,
+            month=month + 1,
+            day=min(start.day, monthrange(year, month + 1)[1]),
+        )
+        if end <= threshold:
+            return query
+        return [
+            self._build_acts_query(start, date_end=end, **filters)
+            for start, end in _iter_acts_date_ranges(date, date_end)
+        ]
+
+    def _build_acts_query(
         self,
         date: str,
         language: str = DEFAULT_LANGUAGE,
@@ -429,11 +469,11 @@ class EurlexConnector:
                 endpoint=resource_uri,
             ) from e
 
-    def execute_query(self, query: str) -> dict:
+    def execute_query(self, query: Union[str, List[str]]) -> dict:
         """Send a SPARQL query to the endpoint and return the JSON response.
 
         Args:
-            query: The SPARQL query string.
+            query: A SPARQL query string or a list of queries to run sequentially.
 
         Returns:
             The parsed JSON response as a dict.
@@ -441,6 +481,22 @@ class EurlexConnector:
         Raises:
             EndpointError: If the request fails or the endpoint is unreachable.
         """
+        if isinstance(query, list):
+            combined = None
+            for statement in query:
+                result = self.execute_query(statement)
+                bindings = result["results"]["bindings"]
+                if not isinstance(bindings, list):
+                    raise TypeError("SPARQL results.bindings must be a list")
+                if combined is None:
+                    combined = {
+                        **result,
+                        "results": {**result["results"], "bindings": list(bindings)},
+                    }
+                else:
+                    combined["results"]["bindings"].extend(bindings)
+            return combined if combined is not None else {"results": {"bindings": []}}
+
         try:
             response = requests.post(
                 self.endpoint,
@@ -506,6 +562,33 @@ class EurlexConnector:
             f"                GROUP BY ?c_act\n"
             f"            }}"
         )
+
+
+def _iter_acts_date_ranges(
+    start: str, end: Optional[str]
+) -> Iterator[Tuple[str, Optional[str]]]:
+    """Yield inclusive, non-overlapping ranges of at most one calendar month."""
+    _validate_date(start)
+    if end is None:
+        yield start, None
+        return
+    _validate_date(end)
+    current, last = _parse_date(start), _parse_date(end)
+    if last < current:
+        raise QueryError("date_end must be on or after date.")
+
+    while True:
+        if current.year == last.year and current.month == last.month:
+            yield current.isoformat(), last.isoformat()
+            return
+        year = current.year + (current.month == 12)
+        month = current.month % 12 + 1
+        next_start = date(year, month, min(current.day, monthrange(year, month)[1]))
+        chunk_end = min(last, next_start - timedelta(days=1))
+        yield current.isoformat(), chunk_end.isoformat()
+        if chunk_end == last:
+            return
+        current = next_start
 
 
 def _validate_date(value: str) -> None:
