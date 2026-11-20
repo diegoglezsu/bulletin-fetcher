@@ -21,9 +21,13 @@ def main() -> int:
     # We want to find all acts that mention "disease" in the title, in English language.
     TITLE_KEYWORD = "disease"
     LANGUAGE = "ENG"
-    # Save file in the same directory as this script
-    SCRIPT_DIR = Path(__file__).resolve().parent
-    OUTPUT_FILE = SCRIPT_DIR / "dataset_eu_disease_acts_2017_2023.csv"
+    # Code Ocean provides /results; locally use a results folder next to this script
+    # Both /code and /results exist only in a Code Ocean capsule
+    if Path("/code").is_dir() and Path("/results").is_dir():
+        RESULTS_DIR = Path("/results")
+    else:
+        RESULTS_DIR = Path(__file__).resolve().parent / "results"
+    OUTPUT_FILE = RESULTS_DIR / "dataset_eu_disease_acts_2017_2023.csv"
 
     print("=" * 60)
     print("Generator of Reproducible Dataset: EU Disease Acts")
@@ -57,8 +61,7 @@ def main() -> int:
 
     # Save file in this directory, so that it can be easily found by the user
     try:
-        # Ensure the script directory exists
-        SCRIPT_DIR.mkdir(parents=True, exist_ok=True)
+        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
         acts_df.to_csv(OUTPUT_FILE, index=False)
         print(f"\n[SUCCESS] Dataset generated correctly and saved in: {OUTPUT_FILE}")
     except Exception as exc:

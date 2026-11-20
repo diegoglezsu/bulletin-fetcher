@@ -1,0 +1,15 @@
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX at: <http://publications.europa.eu/ontology/authority/>
+
+SELECT DISTINCT ?code ?label
+WHERE {
+    ?uri a skos:Concept ;
+        skos:inScheme <http://publications.europa.eu/resource/authority/corporate-body> ;
+        at:authority-code ?code .
+    OPTIONAL {
+        ?uri skos:prefLabel ?label .
+        FILTER(LANG(?label) = "en")
+    }
+    FILTER(BOUND(?label) && CONTAINS(LCASE(STR(?label)), LCASE("commission")))
+}
+ORDER BY ?code
